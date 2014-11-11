@@ -10,9 +10,15 @@
 class GameBoardButton : public QPushButton
 {
 public:
-	GameBoardButton(QWidget* parent = nullptr);
+	GameBoardButton(int row, int column, QWidget* parent = nullptr);
 	~GameBoardButton();
+
+private slots:
+	void onClicked();
 
 private:
 	Q_DISABLE_COPY(GameBoardButton)
+
+	int row;
+	int column;
 };

@@ -6,7 +6,10 @@
 
 SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	: QMainWindow(parent),
-	boardButtons(), currentGameState()
+	boardButtons(), 
+	highlightedButtons(), 
+	currentGameState(), 
+	selectedButton(nullptr)
 {
 	// NOTE: hardcoding this means only board sizes up to 8x8 are supported
 	char* COORDS_NUMBERS[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
@@ -98,6 +101,11 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 
 SerPrunesALotWindow::~SerPrunesALotWindow()
 {
+}
+
+void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
+{
+
 }
 
 void SerPrunesALotWindow::initBoard()
