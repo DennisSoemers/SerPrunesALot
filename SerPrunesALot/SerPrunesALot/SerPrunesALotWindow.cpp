@@ -129,7 +129,22 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 	}
 	else if (selectedButton && currentGameState.canMove(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, currentPlayer))
 	{
-		// TODO: execute move from selectedButton to button
+		// revert all currently highlighted buttons back to their normal color
+		for (GameBoardButton* highlighted : highlightedButtons)
+		{
+			highlighted->resetBackgroundColor();
+		}
+		highlightedButtons.clear();
+
+		// generate the move we're playing
+		bool capture = (occupier == currentGameState.getOpponentColor(currentPlayer));
+		Move move(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, capture);
+
+		// apply it and update GUI status
+		currentGameState.applyMove(move);
+		selectedButton = nullptr;
+		currentGameState.switchCurrentPlayer();
+		updateGui();
 	}
 }
 

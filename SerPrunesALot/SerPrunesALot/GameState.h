@@ -17,6 +17,15 @@ public:
 	~GameState();
 
 	/**
+	 * Applies the given move to this game state.
+	 *
+	 * Does not perform any kinds of safety checks!
+	 * Assumes that the given move is legal, and that the current player is executing this move. 
+	 * Make sure only to call this method with proper input!
+	 */
+	void applyMove(const Move& move);
+
+	/**
 	 * Tests whether it is possible to move from the ''from'' location to the ''to'' location
 	 * Does NOT test whether the corresponding player actually is the player that can currently move.
 	 */
@@ -44,9 +53,16 @@ public:
 	EPlayerColors::Type getCurrentPlayer() const;
 	/** Returns an EPlayerColors::Type indicating what (if anything) is occupying a given BoardLocation */
 	EPlayerColors::Type getOccupier(BoardLocation location) const;
+	/** Given a player's color, returns the color of the opponent */
+	EPlayerColors::Type getOpponentColor(EPlayerColors::Type color) const;
+	/** Returns a reference to the player object corresponding to the given player color. Returns the white player if invalid color is given */
+	Player& getPlayer(EPlayerColors::Type playerColor);
 
 	/** Resets the game state to the starting setup */
 	void reset();
+
+	/** Changes who the current player is */
+	void switchCurrentPlayer();
 
 private:
 	/** Matrix of EPlayerColors::Types encoding the board. */

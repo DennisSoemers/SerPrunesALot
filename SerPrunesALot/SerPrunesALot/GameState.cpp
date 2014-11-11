@@ -13,7 +13,6 @@ GameState::GameState()
 	{
 		for (int j = 0; j < BOARD_WIDTH; ++j)
 		{
-			EPlayerColors::Type test = board.at(i).at(j);
 			board[i][j] = EPlayerColors::Type::NOTHING;
 		}
 	}
@@ -21,6 +20,36 @@ GameState::GameState()
 
 GameState::~GameState()
 {}
+
+void GameState::applyMove(const Move& move)
+{
+	// remove opponent piece if we're capturing something
+	if (move.captured)
+	{
+		getPlayer(getOpponentColor(currentPlayer)).removeKnight(move.to);
+	}
+
+	// change the board data
+	board[move.from.y][move.from.x] = EPlayerColors::Type::NOTHING;
+	board[move.to.y][move.to.x] = currentPlayer;
+
+	// find the ''from'' location in our list of knight locations, and update it to the ''to'' location
+	std::vector<BoardLocation> knightLocations = getPlayer(currentPlayer).getKnightLocations();
+
+	for (size_t i = 0; i < knightLocations.size(); ++i)
+	{
+		BoardLocation& loc = knightLocations[i];
+
+		if (loc == move.from)
+		{
+			loc.x = move.to.x;
+			loc.y = move.to.y;
+			return;
+		}
+	}
+
+	// TODO: shouldn't be possible to reach this, log some kind of error
+}
 
 bool GameState::canMove(BoardLocation from, BoardLocation to) const
 {
@@ -81,19 +110,19 @@ std::vector<Move> GameState::generateMoves(BoardLocation from) const
 	// test for each potential move if it's actually on the board and not occupied by our own knights
 	if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != player)
 	{
-		moves.push_back(Move(from, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::NOTHING)));
+		moves.push_back(Move(from, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
 	}
 	if (vertRightRight.isValid() && getOccupier(vertRightRight) != player)
 	{
-		moves.push_back(Move(from, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::NOTHING)));
+		moves.push_back(Move(from, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
 	}
 	if (vertVertLeft.isValid() && getOccupier(vertVertLeft) != player)
 	{
-		moves.push_back(Move(from, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::NOTHING)));
+		moves.push_back(Move(from, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
 	}
 	if (vertVertRight.isValid() && getOccupier(vertVertRight) != player)
 	{
-		moves.push_back(Move(from, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::NOTHING)));
+		moves.push_back(Move(from, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
 	}
 
 	return moves;
@@ -107,6 +136,34 @@ EPlayerColors::Type GameState::getCurrentPlayer() const
 EPlayerColors::Type GameState::getOccupier(BoardLocation location) const
 {
 	return board[location.y][location.x];
+}
+
+EPlayerColors::Type GameState::getOpponentColor(EPlayerColors::Type color) const
+{
+	if (color == EPlayerColors::Type::BLACK_PLAYER)
+	{
+		return EPlayerColors::Type::WHITE_PLAYER;
+	}
+	else if (color == EPlayerColors::Type::WHITE_PLAYER)
+	{
+		return EPlayerColors::Type::BLACK_PLAYER;
+	}
+	else
+	{
+		return EPlayerColors::Type::NOTHING;
+	}
+}
+
+Player& GameState::getPlayer(EPlayerColors::Type playerColor)
+{
+	if (playerColor == EPlayerColors::Type::BLACK_PLAYER)
+	{
+		return blackPlayer;
+	}
+	else
+	{
+		return whitePlayer;
+	}
 }
 
 void GameState::reset()
@@ -140,4 +197,16 @@ void GameState::reset()
 
 	// reset current player status
 	currentPlayer = EPlayerColors::Type::WHITE_PLAYER;
+}
+
+void GameState::switchCurrentPlayer()
+{
+	if (currentPlayer == EPlayerColors::Type::WHITE_PLAYER)
+	{
+		currentPlayer = EPlayerColors::Type::BLACK_PLAYER;
+	}
+	else
+	{
+		currentPlayer = EPlayerColors::Type::WHITE_PLAYER;
+	}
 }

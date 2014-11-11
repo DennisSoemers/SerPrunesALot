@@ -29,6 +29,14 @@ public:
 
 	/** Gives this player a new knight at a given board location */
 	void addKnight(BoardLocation boardLoc);
+
+	/** 
+	 * Returns the vector of locations where this player has knights. 
+	 *
+	 * NOTE: returned by reference, NOT const!
+	 */
+	std::vector<BoardLocation>& getKnightLocations();
+
 	/** Clears this player's vector of knight locations */
 	void removeAllKnights();
 	/** Removes a knight at a given board location from this player */

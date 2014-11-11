@@ -16,6 +16,11 @@ void Player::addKnight(BoardLocation boardLoc)
 	knightLocations.push_back(boardLoc);
 }
 
+std::vector<BoardLocation>& Player::getKnightLocations()
+{
+	return knightLocations;
+}
+
 void Player::removeAllKnights()
 {
 	knightLocations.clear();
