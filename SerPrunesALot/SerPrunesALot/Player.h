@@ -28,11 +28,11 @@ public:
 	~Player();
 
 	/** Gives this player a new knight at a given board location */
-	void addKnight(const BoardLocation& boardLoc);
+	void addKnight(BoardLocation boardLoc);
 	/** Clears this player's vector of knight locations */
 	void removeAllKnights();
 	/** Removes a knight at a given board location from this player */
-	void removeKnight(const BoardLocation& boardLoc);
+	void removeKnight(BoardLocation boardLoc);
 
 private:
 	/** Vector containing the locations where this player has knights */

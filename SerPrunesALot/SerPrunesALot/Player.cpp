@@ -11,7 +11,7 @@ Player::Player(EPlayerColors::Type color)
 Player::~Player()
 {}
 
-void Player::addKnight(const BoardLocation& boardLoc)
+void Player::addKnight(BoardLocation boardLoc)
 {
 	knightLocations.push_back(boardLoc);
 }
@@ -21,7 +21,7 @@ void Player::removeAllKnights()
 	knightLocations.clear();
 }
 
-void Player::removeKnight(const BoardLocation& boardLoc)
+void Player::removeKnight(BoardLocation boardLoc)
 {
 	VectorUtils::removeSwap<BoardLocation>(knightLocations, boardLoc);
 }

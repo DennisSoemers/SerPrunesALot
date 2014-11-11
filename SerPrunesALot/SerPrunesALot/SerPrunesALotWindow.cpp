@@ -4,12 +4,15 @@
 #include "QIcon.h"
 #include "QLabel.h"
 
+#include "Move.h"
+
 SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	: QMainWindow(parent),
 	boardButtons(), 
 	highlightedButtons(), 
 	currentGameState(), 
-	selectedButton(nullptr)
+	selectedButton(nullptr),
+	ui()
 {
 	// NOTE: hardcoding this means only board sizes up to 8x8 are supported
 	char* COORDS_NUMBERS[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
@@ -73,22 +76,16 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 
 		for (int j = 0; j < BOARD_WIDTH; ++j)
 		{
-			GameBoardButton* button = new GameBoardButton(this);
+			GameBoardButton* button = new GameBoardButton(i, j, this);
 
 			button->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 			button->setToolTip(QString::fromLatin1(COORDS_LETTERS[j]).append(QString::fromLatin1(COORDS_NUMBERS[BOARD_HEIGHT - i - 1])));
-
-			if ((i % 2) == (j % 2))
-			{
-				button->setStyleSheet("background-color:white;");
-			}
-			else
-			{
-				button->setStyleSheet("background-color:brown;");
-			}
+			button->resetBackgroundColor();
 
 			row.push_back(button);
 			gridLayout->addWidget(button, i + 1, j + 1);
+
+			connect(button, &GameBoardButton::clicked, button, &GameBoardButton::onClicked);
 		}
 
 		boardButtons.push_back(row);
@@ -100,12 +97,40 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 }
 
 SerPrunesALotWindow::~SerPrunesALotWindow()
-{
-}
+{}
 
 void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 {
+	BoardLocation clickedLoc = BoardLocation(button->column, button->row);
+	EPlayerColors::Type occupier = currentGameState.getOccupier(clickedLoc);
+	EPlayerColors::Type currentPlayer = currentGameState.getCurrentPlayer();
 
+	// TODO: check if currentPlayer is manually controlled and not an AI player
+
+	if (occupier == currentPlayer)		// clicked a button that we have a knight on
+	{
+		selectedButton = button;
+
+		// revert all currently highlighted buttons back to their normal color
+		for (GameBoardButton* highlighted : highlightedButtons)
+		{
+			highlighted->resetBackgroundColor();
+		}
+		highlightedButtons.clear();
+
+		// generatete moves possible from this location and highlight them
+		std::vector<Move> moves = currentGameState.generateMoves(clickedLoc);
+		for (const Move& m : moves)
+		{
+			GameBoardButton* targetButton = boardButtons[m.to.y][m.to.x];
+			targetButton->setStyleSheet("background-color:green;");
+			highlightedButtons.push_back(targetButton);
+		}
+	}
+	else if (selectedButton && currentGameState.canMove(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, currentPlayer))
+	{
+		// TODO: execute move from selectedButton to button
+	}
 }
 
 void SerPrunesALotWindow::initBoard()

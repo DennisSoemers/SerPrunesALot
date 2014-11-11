@@ -67,6 +67,15 @@
     <ClCompile Include="Player.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
+    <ClCompile Include="Move.cpp">
+      <Filter>Source Files\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GameBoardButton.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GameBoardButton.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="SerPrunesALot.ui">
@@ -78,13 +87,13 @@
     <CustomBuild Include="SerPrunesALotWindow.h">
       <Filter>Source Files\GUI</Filter>
     </CustomBuild>
+    <CustomBuild Include="GameBoardButton.h">
+      <Filter>Source Files\GUI</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_SerPrunesALot.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameBoardButton.h">
-      <Filter>Source Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="BoardLocation.h">
       <Filter>Source Files\Game</Filter>
@@ -100,6 +109,9 @@
     </ClInclude>
     <ClInclude Include="VectorUtils.h">
       <Filter>Source Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Move.h">
+      <Filter>Source Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "QPushButton.h"
-#include "QWidget.h"
+#include <QtWidgets/QPushButton>
 
 /**
  * Class for the Game Board Buttons (= the buttons on the game board that can be clicked to command
@@ -9,16 +8,21 @@
  */
 class GameBoardButton : public QPushButton
 {
+	Q_OBJECT
+
 public:
 	GameBoardButton(int row, int column, QWidget* parent = nullptr);
 	~GameBoardButton();
 
-private slots:
+	/** Resets this button's background color */
+	void resetBackgroundColor();
+
+	int row;
+	int column;
+
+public slots:
 	void onClicked();
 
 private:
 	Q_DISABLE_COPY(GameBoardButton)
-
-	int row;
-	int column;
 };

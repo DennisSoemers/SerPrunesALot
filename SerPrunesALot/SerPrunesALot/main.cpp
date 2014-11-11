@@ -8,8 +8,8 @@
 int main(int argc, char *argv[])
 {
 	QApplication application(argc, argv);
-	SerPrunesALotWindow window;
-	window.show();
-	window.updateGui();
+	SerPrunesALotWindow* window = new SerPrunesALotWindow();
+	window->show();
+	window->updateGui();
 	return application.exec();
 }
