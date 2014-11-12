@@ -143,9 +143,12 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 
 		// apply the move and update GUI status
 		currentGameState.applyMove(move);
-		selectedButton = nullptr;
 		currentGameState.switchCurrentPlayer();
+
 		updateGui();
+		selectedButton->setStyleSheet("background-color:blue;");	// make the square we came from blue
+		highlightedButtons.push_back(selectedButton);
+		selectedButton = nullptr;
 	}
 }
 
