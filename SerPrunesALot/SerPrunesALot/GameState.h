@@ -57,6 +57,8 @@ public:
 	EPlayerColors::Type getOpponentColor(EPlayerColors::Type color) const;
 	/** Returns a reference to the player object corresponding to the given player color. Returns the white player if invalid color is given */
 	Player& getPlayer(EPlayerColors::Type playerColor);
+	/** Returns the color of the player that won the game. Returns EPlayerColors::Type::NOTHING if the game didn't end yet */
+	EPlayerColors::Type getWinner() const;
 
 	/** Resets the game state to the starting setup */
 	void reset();

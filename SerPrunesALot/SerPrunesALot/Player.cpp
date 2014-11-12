@@ -21,6 +21,11 @@ std::vector<BoardLocation>& Player::getKnightLocations()
 	return knightLocations;
 }
 
+int Player::getNumKnights() const
+{
+	return knightLocations.size();
+}
+
 void Player::removeAllKnights()
 {
 	knightLocations.clear();

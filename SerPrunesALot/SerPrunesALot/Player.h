@@ -37,6 +37,9 @@ public:
 	 */
 	std::vector<BoardLocation>& getKnightLocations();
 
+	/** Returns the number of knights that this player has */
+	int getNumKnights() const;
+
 	/** Clears this player's vector of knight locations */
 	void removeAllKnights();
 	/** Removes a knight at a given board location from this player */

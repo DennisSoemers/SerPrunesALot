@@ -166,6 +166,34 @@ Player& GameState::getPlayer(EPlayerColors::Type playerColor)
 	}
 }
 
+EPlayerColors::Type GameState::getWinner() const
+{
+	for (int i = 0; i < BOARD_WIDTH; ++i)
+	{
+		if (board[0][i] == EPlayerColors::Type::WHITE_PLAYER)
+		{
+			return EPlayerColors::Type::WHITE_PLAYER;
+		}
+
+		if (board[BOARD_HEIGHT - 1][i] == EPlayerColors::Type::BLACK_PLAYER)
+		{
+			return EPlayerColors::Type::BLACK_PLAYER;
+		}
+	}
+
+	if (blackPlayer.getNumKnights() == 0)
+	{
+		return EPlayerColors::Type::WHITE_PLAYER;
+	}
+
+	if (whitePlayer.getNumKnights() == 0)
+	{
+		return EPlayerColors::Type::BLACK_PLAYER;
+	}
+
+	return EPlayerColors::Type::NOTHING;
+}
+
 void GameState::reset()
 {
 	// make sure both players have no Knights from any previous games
