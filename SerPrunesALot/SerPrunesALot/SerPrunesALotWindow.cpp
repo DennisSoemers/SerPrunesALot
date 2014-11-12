@@ -4,6 +4,7 @@
 #include "QIcon.h"
 #include "QLabel.h"
 
+#include "Logger.h"
 #include "Move.h"
 
 SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
@@ -140,7 +141,7 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 		bool capture = (occupier == currentGameState.getOpponentColor(currentPlayer));
 		Move move(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, capture);
 
-		// apply it and update GUI status
+		// apply the move and update GUI status
 		currentGameState.applyMove(move);
 		selectedButton = nullptr;
 		currentGameState.switchCurrentPlayer();

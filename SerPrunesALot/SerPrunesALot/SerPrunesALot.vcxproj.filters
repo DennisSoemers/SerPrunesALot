@@ -38,6 +38,15 @@
     <Filter Include="Source Files\Utils">
       <UniqueIdentifier>{4c6f1ed4-b44f-48ce-9d89-df14a7a60ac6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utils\Logger">
+      <UniqueIdentifier>{55b33e14-1e39-4b3a-9740-7ce9fbb9de27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Strings">
+      <UniqueIdentifier>{c77a47a5-74ea-4cfd-b8e2-d521e0c40b9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Timer">
+      <UniqueIdentifier>{e7d9c6e2-86fb-4cb8-b186-40069a623c81}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -112,6 +121,15 @@
     </ClInclude>
     <ClInclude Include="Move.h">
       <Filter>Source Files\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Source Files\Utils\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="StringBuilder.h">
+      <Filter>Source Files\Utils\Strings</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.hpp">
+      <Filter>Source Files\Utils\Timer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

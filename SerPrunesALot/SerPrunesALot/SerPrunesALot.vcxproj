@@ -141,8 +141,11 @@
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GeneratedFiles\ui_SerPrunesALot.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="StringBuilder.h" />
+    <ClInclude Include="Timer.hpp" />
     <ClInclude Include="VectorUtils.h" />
   </ItemGroup>
   <ItemGroup>
