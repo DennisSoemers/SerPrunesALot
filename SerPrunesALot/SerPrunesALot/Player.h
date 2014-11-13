@@ -37,6 +37,9 @@ public:
 	 */
 	std::vector<BoardLocation>& getKnightLocations();
 
+	/** Returns the vector of locations where this player has knights by const reference */
+	const std::vector<BoardLocation>& getKnightLocations() const;
+
 	/** Returns the number of knights that this player has */
 	int getNumKnights() const;
 

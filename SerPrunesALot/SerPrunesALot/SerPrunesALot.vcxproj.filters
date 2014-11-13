@@ -50,6 +50,9 @@
     <Filter Include="Source Files\AI">
       <UniqueIdentifier>{93386b1e-404e-4f28-be61-d60024e68b52}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utils\Math">
+      <UniqueIdentifier>{d3f52af1-6c1c-45f1-98b2-ab8454a61219}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -142,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="BasicAlphaBeta.h">
       <Filter>Source Files\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="MathConstants.h">
+      <Filter>Source Files\Utils\Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

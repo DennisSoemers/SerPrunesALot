@@ -93,6 +93,80 @@ bool GameState::canMove(BoardLocation from, BoardLocation to, EPlayerColors::Typ
 	return false;
 }
 
+std::vector<Move> GameState::generateAllMoves() const
+{
+	std::vector<Move> moves;
+
+	if (currentPlayer == EPlayerColors::Type::BLACK_PLAYER)
+	{
+		const std::vector<BoardLocation>& knightLocations = blackPlayer.getKnightLocations();
+		moves.reserve(4 * knightLocations.size());		// at most 4 moves per knight, so reserve that much space
+
+		for (const BoardLocation& knightLoc : knightLocations)
+		{
+			// add the moves for this knight location
+			// generate the 4 potential moves hardcoded because we like speed
+			BoardLocation vertLeftLeft(knightLoc.x - 2, knightLoc.y + 1);
+			BoardLocation vertRightRight(knightLoc.x + 2, knightLoc.y + 1);
+			BoardLocation vertVertLeft(knightLoc.x - 1, knightLoc.y + 2);
+			BoardLocation vertVertRight(knightLoc.x + 1, knightLoc.y + 2);
+
+			// test for each potential move if it's actually on the board and not occupied by our own knights
+			if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
+			}
+			if (vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
+			}
+			if (vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
+			}
+			if (vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
+			}
+		}
+	}
+	else if (currentPlayer == EPlayerColors::Type::WHITE_PLAYER)
+	{
+		const std::vector<BoardLocation>& knightLocations = whitePlayer.getKnightLocations();
+		moves.reserve(4 * knightLocations.size());		// at most 4 moves per knight, so reserve that much space
+
+		for (const BoardLocation& knightLoc : knightLocations)
+		{
+			// add the moves for this knight location
+			// generate the 4 potential moves hardcoded because we like speed
+			BoardLocation vertLeftLeft(knightLoc.x - 2, knightLoc.y - 1);
+			BoardLocation vertRightRight(knightLoc.x + 2, knightLoc.y - 1);
+			BoardLocation vertVertLeft(knightLoc.x - 1, knightLoc.y - 2);
+			BoardLocation vertVertRight(knightLoc.x + 1, knightLoc.y - 2);
+
+			// test for each potential move if it's actually on the board and not occupied by our own knights
+			if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
+			}
+			if (vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
+			}
+			if (vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
+			}
+			if (vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
+			}
+		}
+	}
+
+	return moves;
+}
+
 std::vector<Move> GameState::generateMoves(BoardLocation from) const
 {
 	std::vector<Move> moves;

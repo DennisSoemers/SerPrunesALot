@@ -21,6 +21,11 @@ std::vector<BoardLocation>& Player::getKnightLocations()
 	return knightLocations;
 }
 
+const std::vector<BoardLocation>& Player::getKnightLocations() const
+{
+	return knightLocations;
+}
+
 int Player::getNumKnights() const
 {
 	return knightLocations.size();

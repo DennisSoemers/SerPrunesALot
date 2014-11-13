@@ -43,6 +43,11 @@ public:
 	 */
 	bool canMove(BoardLocation from, BoardLocation to, EPlayerColors::Type player) const;
 
+	/**
+	 * Generates a vector with ALL legal moves in the current game state.
+	 */
+	std::vector<Move> generateAllMoves() const;
+
 	/** 
 	 * Generates a vector with all legal moves from the ''from'' location. 
 	 * Does NOT test whether the player on the ''from'' location actually is the current player 
