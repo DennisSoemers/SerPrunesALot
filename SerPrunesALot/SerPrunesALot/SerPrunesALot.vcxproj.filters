@@ -47,6 +47,9 @@
     <Filter Include="Source Files\Utils\Timer">
       <UniqueIdentifier>{e7d9c6e2-86fb-4cb8-b186-40069a623c81}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AI">
+      <UniqueIdentifier>{93386b1e-404e-4f28-be61-d60024e68b52}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -84,6 +87,9 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_GameBoardButton.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicAlphaBeta.cpp">
+      <Filter>Source Files\AI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -130,6 +136,12 @@
     </ClInclude>
     <ClInclude Include="Timer.hpp">
       <Filter>Source Files\Utils\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="AiEngine.h">
+      <Filter>Source Files\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicAlphaBeta.h">
+      <Filter>Source Files\AI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

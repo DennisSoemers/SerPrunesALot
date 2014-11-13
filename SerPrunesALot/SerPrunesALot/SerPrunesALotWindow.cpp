@@ -4,16 +4,18 @@
 #include "QIcon.h"
 #include "QLabel.h"
 
+#include "BasicAlphaBeta.h"
 #include "Logger.h"
 #include "Move.h"
 
 SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	: QMainWindow(parent),
-	boardButtons(), 
-	highlightedButtons(), 
-	currentGameState(), 
+	boardButtons(),
+	highlightedButtons(),
+	currentGameState(),
 	selectedButton(nullptr),
-	ui()
+	ui(),
+	aiEngine(nullptr)
 {
 	// NOTE: hardcoding this means only board sizes up to 8x8 are supported
 	char* COORDS_NUMBERS[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
@@ -37,10 +39,10 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	resize(windowWidth, windowHeight);
 	move(((screenWidth - windowWidth) / 2), ((screenHeight - windowHeight) / 2));
 
-	/* TODO: set icon
-	window.setWindowIcon(QIcon("file.png"));
-	*/
+	// Set window icon
+	setWindowIcon(QIcon(":/Resources/Resources/WhiteIcon.png"));
 
+	// Prepare layout for gameboard
 	QGridLayout* gridLayout = new QGridLayout(this);
 	gridLayout->setSpacing(0);
 
@@ -94,11 +96,57 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 
 	centralWidget()->setLayout(gridLayout);
 
+	// Create menus for menu bar
+	// Player Options
+	QMenu* playerMenu = new QMenu("Player Options");
+	QMenu* blackPlayerMenu = new QMenu("Black Player");
+	QMenu* whitePlayerMenu = new QMenu("White Player");
+
+	blackPlayerAiControl = new QAction("Allow AI control", blackPlayerMenu);
+	blackPlayerAiControl->setCheckable(true);
+	blackPlayerAiControl->setChecked(true);
+	blackPlayerMenu->addAction(blackPlayerAiControl);
+
+	blackPlayerManualControl = new QAction("Allow manual control", blackPlayerMenu);
+	blackPlayerManualControl->setCheckable(true);
+	blackPlayerManualControl->setChecked(true);
+	blackPlayerMenu->addAction(blackPlayerManualControl);
+
+	whitePlayerAiControl = new QAction("Allow AI control", whitePlayerMenu);
+	whitePlayerAiControl->setCheckable(true);
+	whitePlayerAiControl->setChecked(true);
+	whitePlayerMenu->addAction(whitePlayerAiControl);
+
+	whitePlayerManualControl = new QAction("Allow manual control", whitePlayerMenu);
+	whitePlayerManualControl->setCheckable(true);
+	whitePlayerManualControl->setChecked(true);
+	whitePlayerMenu->addAction(whitePlayerManualControl);
+
+	playerMenu->addMenu(blackPlayerMenu);
+	playerMenu->addMenu(whitePlayerMenu);
+
+	// Create and add the button to let the AI play a turn
+	QAction* runAiButton = new QAction("Run AI this turn!", menuBar());
+	connect(runAiButton, &QAction::triggered, this, &SerPrunesALotWindow::playTurnAi);
+
+	// fill menuBar
+	menuBar()->addMenu(playerMenu);
+	menuBar()->addAction(runAiButton);
+
+	// create AI Engine
+	aiEngine = new BasicAlphaBeta();
+
+	// Initialize the board for new game
 	initBoard();
 }
 
 SerPrunesALotWindow::~SerPrunesALotWindow()
-{}
+{
+	if (aiEngine)
+	{
+		delete aiEngine;
+	}
+}
 
 void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 {
@@ -130,31 +178,94 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 	}
 	else if (selectedButton && currentGameState.canMove(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, currentPlayer))
 	{
-		// revert all currently highlighted buttons back to their normal color
-		for (GameBoardButton* highlighted : highlightedButtons)
+		// verify that we actually allow manual control
+		bool allowManualControl = false;
+
+		if (currentPlayer == EPlayerColors::BLACK_PLAYER && blackPlayerManualControl->isChecked())
 		{
-			highlighted->resetBackgroundColor();
+			allowManualControl = true;
 		}
-		highlightedButtons.clear();
+		else if (currentPlayer == EPlayerColors::WHITE_PLAYER && whitePlayerManualControl->isChecked())
+		{
+			allowManualControl = true;
+		}
 
-		// generate the move we're playing
-		bool capture = (occupier == currentGameState.getOpponentColor(currentPlayer));
-		Move move(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, capture);
+		if (allowManualControl)
+		{
+			// revert all currently highlighted buttons back to their normal color
+			for (GameBoardButton* highlighted : highlightedButtons)
+			{
+				highlighted->resetBackgroundColor();
+			}
+			highlightedButtons.clear();
 
-		// apply the move and update GUI status
-		currentGameState.applyMove(move);
-		currentGameState.switchCurrentPlayer();
+			// generate the move we're playing
+			bool capture = (occupier == currentGameState.getOpponentColor(currentPlayer));
+			Move move(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, capture);
 
-		updateGui();
-		selectedButton->setStyleSheet("background-color:blue;");	// make the square we came from blue
-		highlightedButtons.push_back(selectedButton);
-		selectedButton = nullptr;
+			// apply the move and update GUI status
+			currentGameState.applyMove(move);
+			currentGameState.switchCurrentPlayer();
+			updateGui();
+
+			// make the squares we came from and went to blue
+			selectedButton->setStyleSheet("background-color:blue;");
+			highlightedButtons.push_back(selectedButton);
+			button->setStyleSheet("background-color:blue;");
+			highlightedButtons.push_back(button);
+
+			selectedButton = nullptr;
+		}
 	}
 }
 
 void SerPrunesALotWindow::initBoard()
 {
 	currentGameState.reset();
+}
+
+void SerPrunesALotWindow::playTurnAi()
+{
+	if (!aiEngine)
+	{
+		return;
+	}
+
+	EPlayerColors::Type currentPlayer = currentGameState.getCurrentPlayer();
+
+	// Make sure we allow AI to control the color player that is allowed to play this turn
+	if (currentPlayer == EPlayerColors::Type::BLACK_PLAYER && !blackPlayerAiControl->isChecked())
+	{
+		return;
+	}
+
+	if (currentPlayer == EPlayerColors::Type::WHITE_PLAYER && !whitePlayerAiControl->isChecked())
+	{
+		return;
+	}
+
+	// let our AI Engine choose a move
+	Move move = aiEngine->chooseMove(currentGameState);
+
+	// revert all currently highlighted buttons back to their normal color
+	for (GameBoardButton* highlighted : highlightedButtons)
+	{
+		highlighted->resetBackgroundColor();
+	}
+	highlightedButtons.clear();
+
+	// apply the move and update GUI status
+	currentGameState.applyMove(move);
+	currentGameState.switchCurrentPlayer();
+	updateGui();
+
+	// make the squares we came from and went to blue
+	boardButtons[move.from.y][move.from.x]->setStyleSheet("background-color:blue;");
+	highlightedButtons.push_back(boardButtons[move.from.y][move.from.x]);
+	boardButtons[move.to.y][move.to.x]->setStyleSheet("background-color:blue;");
+	highlightedButtons.push_back(boardButtons[move.to.y][move.to.x]);
+
+	selectedButton = nullptr;
 }
 
 void SerPrunesALotWindow::resizeEvent(QResizeEvent* event)
