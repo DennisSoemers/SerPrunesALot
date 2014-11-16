@@ -32,8 +32,14 @@ public:
 	 */
 	void initBoard();
 
+	/** Highlights ALL locations on the board that can be moved to this turn */
+	void highlightAllMoves();
+
 	/** Tells the AI engine to play this turn */
 	void playTurnAi();
+
+	/** Reverts the game state back to the way it was before executing the last executed move */
+	void undoLastMove();
 
 	/** Updates the GUI, in order to show the currentGameState again */
 	void updateGui();
@@ -47,6 +53,8 @@ private:
 	std::vector<std::vector<GameBoardButton*>> boardButtons;
 	/** Vector of icons which are currently highlighted as being possible to move to */
 	std::vector<GameBoardButton*> highlightedButtons;
+	/** Sequence of moves that have been played in the past */
+	std::vector<Move> movesPlayed;
 	/** The current game state shown by the GUI */
 	GameState currentGameState;
 	/** The button that is currently selected */

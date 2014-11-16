@@ -129,8 +129,18 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	QAction* runAiButton = new QAction("Run AI this turn!", menuBar());
 	connect(runAiButton, &QAction::triggered, this, &SerPrunesALotWindow::playTurnAi);
 
+	// Create and add button to undo the last move
+	QAction* undoLastMoveButton = new QAction("Undo Last Move", menuBar());
+	connect(undoLastMoveButton, &QAction::triggered, this, &SerPrunesALotWindow::undoLastMove);
+
+	// Create and add button to highlight all possible moves this turn
+	QAction* highlightAllMovesButton = new QAction("Highlight All Moves", menuBar());
+	connect(highlightAllMovesButton, &QAction::triggered, this, &SerPrunesALotWindow::highlightAllMoves);
+
 	// fill menuBar
 	menuBar()->addMenu(playerMenu);
+	menuBar()->addAction(undoLastMoveButton);
+	menuBar()->addAction(highlightAllMovesButton);
 	menuBar()->addAction(runAiButton);
 
 	// create AI Engine
@@ -207,11 +217,19 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 			currentGameState.applyMove(move);
 			currentGameState.switchCurrentPlayer();
 			updateGui();
+			movesPlayed.push_back(move);
 
-			// make the squares we came from and went to blue
+			// highlight the squares we came from and went to
 			selectedButton->setStyleSheet("background-color:blue;");
 			highlightedButtons.push_back(selectedButton);
-			button->setStyleSheet("background-color:blue;");
+			if (move.captured)
+			{
+				button->setStyleSheet("background-color:red;");
+			}
+			else
+			{
+				button->setStyleSheet("background-color:blue;");
+			}
 			highlightedButtons.push_back(button);
 
 			selectedButton = nullptr;
@@ -222,6 +240,26 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 void SerPrunesALotWindow::initBoard()
 {
 	currentGameState.reset();
+}
+
+void SerPrunesALotWindow::highlightAllMoves()
+{
+	// revert all currently highlighted buttons back to their normal color
+	for (GameBoardButton* highlighted : highlightedButtons)
+	{
+		highlighted->resetBackgroundColor();
+	}
+	highlightedButtons.clear();
+
+	// generate all moves
+	std::vector<Move> moves = currentGameState.generateAllMoves();
+
+	// highlight them all
+	for (Move m : moves)
+	{
+		boardButtons[m.to.y][m.to.x]->setStyleSheet("background-color:blue;");
+		highlightedButtons.push_back(boardButtons[m.to.y][m.to.x]);
+	}
 }
 
 void SerPrunesALotWindow::playTurnAi()
@@ -247,6 +285,11 @@ void SerPrunesALotWindow::playTurnAi()
 	// let our AI Engine choose a move
 	Move move = aiEngine->chooseMove(currentGameState);
 
+	if (move == INVALID_MOVE)
+	{
+		return;
+	}
+
 	// revert all currently highlighted buttons back to their normal color
 	for (GameBoardButton* highlighted : highlightedButtons)
 	{
@@ -258,11 +301,19 @@ void SerPrunesALotWindow::playTurnAi()
 	currentGameState.applyMove(move);
 	currentGameState.switchCurrentPlayer();
 	updateGui();
+	movesPlayed.push_back(move);
 
-	// make the squares we came from and went to blue
+	// highlight the squares we came from and went to
 	boardButtons[move.from.y][move.from.x]->setStyleSheet("background-color:blue;");
 	highlightedButtons.push_back(boardButtons[move.from.y][move.from.x]);
-	boardButtons[move.to.y][move.to.x]->setStyleSheet("background-color:blue;");
+	if (move.captured)
+	{
+		boardButtons[move.to.y][move.to.x]->setStyleSheet("background-color:red;");
+	}
+	else
+	{
+		boardButtons[move.to.y][move.to.x]->setStyleSheet("background-color:blue;");
+	}
 	highlightedButtons.push_back(boardButtons[move.to.y][move.to.x]);
 
 	selectedButton = nullptr;
@@ -273,6 +324,35 @@ void SerPrunesALotWindow::resizeEvent(QResizeEvent* event)
 	QMainWindow::resizeEvent(event);
 
 	updateGui();
+}
+
+void SerPrunesALotWindow::undoLastMove()
+{
+	if (movesPlayed.size() > 0)
+	{
+		Move& move = movesPlayed.back();
+		movesPlayed.pop_back();
+
+		// revert all currently highlighted buttons back to their normal color
+		for (GameBoardButton* highlighted : highlightedButtons)
+		{
+			highlighted->resetBackgroundColor();
+		}
+		highlightedButtons.clear();
+
+		// undo the move and update GUI status
+		currentGameState.switchCurrentPlayer();
+		currentGameState.undoMove(move);
+		updateGui();
+
+		// make the squares we came from and went to blue
+		boardButtons[move.from.y][move.from.x]->setStyleSheet("background-color:blue;");
+		highlightedButtons.push_back(boardButtons[move.from.y][move.from.x]);
+		boardButtons[move.to.y][move.to.x]->setStyleSheet("background-color:blue;");
+		highlightedButtons.push_back(boardButtons[move.to.y][move.to.x]);
+
+		selectedButton = nullptr;
+	}
 }
 
 void SerPrunesALotWindow::updateGui()

@@ -26,3 +26,5 @@ struct Move
 		return ((from == other.from) && (to == other.to) && (captured == other.captured));
 	}
 };
+
+static Move INVALID_MOVE = Move(BoardLocation(-1, -1), BoardLocation(-1, -1), false);

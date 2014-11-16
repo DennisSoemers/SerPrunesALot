@@ -56,6 +56,10 @@ public:
 
 	/** Returns an EPlayerColors::Type indicating which player is the current player */
 	EPlayerColors::Type getCurrentPlayer() const;
+	/** Returns the number of knights that the black player has */
+	int getNumBlackKnights() const;
+	/** Returns the number of knights that the white player has */
+	int getNumWhiteKnights() const;
 	/** Returns an EPlayerColors::Type indicating what (if anything) is occupying a given BoardLocation */
 	EPlayerColors::Type getOccupier(BoardLocation location) const;
 	/** Given a player's color, returns the color of the opponent */
@@ -70,6 +74,13 @@ public:
 
 	/** Changes who the current player is */
 	void switchCurrentPlayer();
+
+	/**
+	 * Reverts game state to the way it was before applying the given move
+	 *
+	 * Assumes that currentPlayer was already switched back to the player that originally made the move!
+	 */
+	void undoMove(const Move& move);
 
 private:
 	/** Matrix of EPlayerColors::Types encoding the board. */

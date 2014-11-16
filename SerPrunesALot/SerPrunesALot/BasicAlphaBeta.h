@@ -19,9 +19,11 @@ private:
 	 * Returns an evaluation of the given game state.
 	 *
 	 * Assumes that the game state should be evaluated from the perspective of the ''currentPlayer'' value in the game state.
-	 * This means that a move should first be applied, then evaluated, and THEN the current player should be switched!
 	 */
 	int evaluate(const GameState& gameState) const;
+
+	/** Same as above, but requires passing an additional winner argument. Optimization if winner has already been determined in calling code */
+	int evaluate(const GameState& gameState, EPlayerColors::Type winner) const;
 
 	/** 
 	 * Starts alpha-beta search, given the current game state and a maximum search depth.

@@ -1,4 +1,5 @@
 #include "GameState.h"
+#include "Logger.h"
 
 GameState::GameState()
 	: board(BOARD_HEIGHT, std::vector<EPlayerColors::Type>(BOARD_WIDTH)), 
@@ -34,7 +35,7 @@ void GameState::applyMove(const Move& move)
 	board[move.to.y][move.to.x] = currentPlayer;
 
 	// find the ''from'' location in our list of knight locations, and update it to the ''to'' location
-	std::vector<BoardLocation> knightLocations = getPlayer(currentPlayer).getKnightLocations();
+	std::vector<BoardLocation>& knightLocations = getPlayer(currentPlayer).getKnightLocations();
 
 	for (size_t i = 0; i < knightLocations.size(); ++i)
 	{
@@ -48,7 +49,7 @@ void GameState::applyMove(const Move& move)
 		}
 	}
 
-	// TODO: shouldn't be possible to reach this, log some kind of error
+	LOG_ERROR("Did not change the data of any previous knight location in GameState::applyMove()")
 }
 
 bool GameState::canMove(BoardLocation from, BoardLocation to) const
@@ -212,6 +213,17 @@ EPlayerColors::Type GameState::getOccupier(BoardLocation location) const
 	return board[location.y][location.x];
 }
 
+int GameState::getNumBlackKnights() const
+{
+	return blackPlayer.getNumKnights();
+}
+
+int GameState::getNumWhiteKnights() const
+{
+	return whitePlayer.getNumKnights();
+}
+
+
 EPlayerColors::Type GameState::getOpponentColor(EPlayerColors::Type color) const
 {
 	if (color == EPlayerColors::Type::BLACK_PLAYER)
@@ -279,13 +291,13 @@ void GameState::reset()
 	{
 		board[0][i] = EPlayerColors::Type::BLACK_PLAYER;
 		board[1][i] = EPlayerColors::Type::BLACK_PLAYER;
-		blackPlayer.addKnight(BoardLocation(0, i));
-		blackPlayer.addKnight(BoardLocation(1, i));
+		blackPlayer.addKnight(BoardLocation(i, 0));
+		blackPlayer.addKnight(BoardLocation(i, 1));
 
 		board[BOARD_HEIGHT - 1][i] = EPlayerColors::Type::WHITE_PLAYER;
 		board[BOARD_HEIGHT - 2][i] = EPlayerColors::Type::WHITE_PLAYER;
-		whitePlayer.addKnight(BoardLocation(BOARD_HEIGHT - 1, i));
-		whitePlayer.addKnight(BoardLocation(BOARD_HEIGHT - 2, i));
+		whitePlayer.addKnight(BoardLocation(i, BOARD_HEIGHT - 1));
+		whitePlayer.addKnight(BoardLocation(i, BOARD_HEIGHT - 2));
 	}
 
 	// empty the middle section
@@ -311,4 +323,39 @@ void GameState::switchCurrentPlayer()
 	{
 		currentPlayer = EPlayerColors::Type::WHITE_PLAYER;
 	}
+}
+
+void GameState::undoMove(const Move& move)
+{
+	// give opponent piece back if we captured something
+	if (move.captured)
+	{
+		EPlayerColors::Type opponentColor = getOpponentColor(currentPlayer);
+		getPlayer(opponentColor).addKnight(move.to);
+		board[move.to.y][move.to.x] = opponentColor;
+	}
+	else
+	{
+		board[move.to.y][move.to.x] = EPlayerColors::Type::NOTHING;
+	}
+
+	// move our piece back to where we came from
+	board[move.from.y][move.from.x] = currentPlayer;
+
+	// find the ''to'' location in our list of knight locations, and revert it to the ''from'' location
+	std::vector<BoardLocation>& knightLocations = getPlayer(currentPlayer).getKnightLocations();
+
+	for (size_t i = 0; i < knightLocations.size(); ++i)
+	{
+		BoardLocation& loc = knightLocations[i];
+
+		if (loc == move.to)
+		{
+			loc.x = move.from.x;
+			loc.y = move.from.y;
+			return;
+		}
+	}
+
+	LOG_ERROR("Did not change the data of any previous knight location in GameState::undoMove()")
 }
