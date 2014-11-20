@@ -5,10 +5,20 @@
 class BasicAlphaBeta : public AiEngine
 {
 public:
+	BasicAlphaBeta::BasicAlphaBeta();
+
 	/** Uses basic Alpha Beta algorithm to choose a move */
 	virtual Move chooseMove(GameState& gameState);
 
+#ifdef SHOW_STATUS_INFO
+	virtual int getRootEvaluation();
+	virtual int getWinEvaluation();
+#endif // SHOW_STATUS_INFO
+
 private:
+	/** The evaluation of the root node during the last search */
+	int lastRootEvaluation;
+
 	/**
 	 * Continues alpha-beta search, given the game state, maximum search depth, and current alpha and beta values.
 	 * Returns the node's evaluation.

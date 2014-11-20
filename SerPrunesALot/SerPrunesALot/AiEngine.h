@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Options.h"
+
 #include "GameState.h"
 #include "Move.h"
 
@@ -22,4 +24,18 @@ public:
 	 * but simply as a reference.
 	 */
 	virtual Move chooseMove(GameState& gameState) = 0;
+
+#ifdef SHOW_STATUS_INFO
+	/**
+	 * Virtual method that should be implemented to return the evaluation associated
+	 * with a won game.
+	 */
+	virtual int getWinEvaluation() = 0;
+
+	/** 
+	 * Virtual method that should be implemented to return the evaluation of the
+	 * root node during the last time the engine was asked to choose a move.
+	 */
+	virtual int getRootEvaluation() = 0;
+#endif
 };

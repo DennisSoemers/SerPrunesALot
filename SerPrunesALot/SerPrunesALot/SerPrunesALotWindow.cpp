@@ -4,6 +4,8 @@
 #include "QIcon.h"
 #include "QLabel.h"
 
+#include "Options.h"
+
 #include "BasicAlphaBeta.h"
 #include "Logger.h"
 #include "Move.h"
@@ -143,6 +145,10 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	menuBar()->addAction(highlightAllMovesButton);
 	menuBar()->addAction(runAiButton);
 
+	// set up status bar
+	winDetectionLabel = new QLabel();
+	statusBar()->addPermanentWidget(winDetectionLabel);
+
 	// create AI Engine
 	aiEngine = new BasicAlphaBeta();
 
@@ -215,7 +221,6 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 
 			// apply the move and update GUI status
 			currentGameState.applyMove(move);
-			currentGameState.switchCurrentPlayer();
 			updateGui();
 			movesPlayed.push_back(move);
 
@@ -240,6 +245,7 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 void SerPrunesALotWindow::initBoard()
 {
 	currentGameState.reset();
+	winDetectionLabel->setText("");
 }
 
 void SerPrunesALotWindow::highlightAllMoves()
@@ -282,13 +288,60 @@ void SerPrunesALotWindow::playTurnAi()
 		return;
 	}
 
+#ifdef SHOW_STATUS_INFO
+	statusBar()->showMessage("Running AI engine...");
+#endif // SHOW_STATUS_INFO
+
 	// let our AI Engine choose a move
 	Move move = aiEngine->chooseMove(currentGameState);
 
-	if (move == INVALID_MOVE)
+	if (move == INVALID_MOVE)		// means game is already over
 	{
+#ifdef SHOW_STATUS_INFO
+		statusBar()->showMessage("Game ended!");
+#endif // SHOW_STATUS_NFO
+
 		return;
 	}
+
+#ifdef SHOW_STATUS_INFO
+	statusBar()->showMessage("Waiting for input...");
+	int rootEvaluation = aiEngine->getRootEvaluation();
+
+	if (rootEvaluation == aiEngine->getWinEvaluation())				// detected (future) win
+	{
+		if (currentPlayer == EPlayerColors::Type::WHITE_PLAYER)
+		{
+			winDetectionLabel->setText("(Future) Win detected for White Player by White Player!");
+		}
+		else
+		{
+			winDetectionLabel->setText("(Future) Win detected for Black Player by White Player!");
+		}
+	}
+	else if (rootEvaluation == -aiEngine->getWinEvaluation())		// detected (future) loss
+	{
+		if (currentPlayer == EPlayerColors::Type::WHITE_PLAYER)
+		{
+			winDetectionLabel->setText("(Future) Win detected for Black Player by White Player!");
+		}
+		else
+		{
+			winDetectionLabel->setText("(Future) Win detected for White Player by Black Player!");
+		}
+	}
+	else
+	{
+		if (currentPlayer == EPlayerColors::Type::WHITE_PLAYER)
+		{
+			winDetectionLabel->setText(QString::fromStdString(StringBuilder() << "White player evaluates this match: " << rootEvaluation));
+		}
+		else
+		{
+			winDetectionLabel->setText(QString::fromStdString(StringBuilder() << "Black player evaluates this match: " << rootEvaluation));
+		}
+	}
+#endif // SHOW_STATUS_INFO
 
 	// revert all currently highlighted buttons back to their normal color
 	for (GameBoardButton* highlighted : highlightedButtons)
@@ -299,7 +352,6 @@ void SerPrunesALotWindow::playTurnAi()
 
 	// apply the move and update GUI status
 	currentGameState.applyMove(move);
-	currentGameState.switchCurrentPlayer();
 	updateGui();
 	movesPlayed.push_back(move);
 
@@ -341,7 +393,6 @@ void SerPrunesALotWindow::undoLastMove()
 		highlightedButtons.clear();
 
 		// undo the move and update GUI status
-		currentGameState.switchCurrentPlayer();
 		currentGameState.undoMove(move);
 		updateGui();
 

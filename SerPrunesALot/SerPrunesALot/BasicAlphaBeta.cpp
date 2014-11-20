@@ -1,9 +1,18 @@
 #include "BasicAlphaBeta.h"
 #include "MathConstants.h"
 
+/** 
+ * The evaluation corresponding to a won game. 
+ * Should be a non-tight upper bound on values the evaluation function can return in non-terminal game states
+ */ 
+#define WIN_EVALUATION 20
+
+BasicAlphaBeta::BasicAlphaBeta() : lastRootEvaluation(0)
+{}
+
 Move BasicAlphaBeta::chooseMove(GameState& gameState)
 {
-	return startAlphaBeta(gameState, 3);
+	return startAlphaBeta(gameState, 7);
 }
 
 int BasicAlphaBeta::alphaBeta(GameState& gameState, int depth, int alpha, int beta)
@@ -23,9 +32,7 @@ int BasicAlphaBeta::alphaBeta(GameState& gameState, int depth, int alpha, int be
 	{
 		Move m = moves[i];													// select move
 		gameState.applyMove(m);												// apply move
-		gameState.switchCurrentPlayer();									// switch player perspective
 		int value = -alphaBeta(gameState, depth - 1, -beta, -alpha);		// continue searching
-		gameState.switchCurrentPlayer();									// switch player perspective back
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
 
 		if (value > score)		// new best move found
@@ -54,27 +61,13 @@ int BasicAlphaBeta::evaluate(const GameState& gameState, EPlayerColors::Type win
 {
 	EPlayerColors::Type evaluatingPlayer = gameState.getCurrentPlayer();
 
-	if (winner == evaluatingPlayer)		// evaluating player won
+	if (winner == evaluatingPlayer)						// evaluating player won
 	{
-		if (winner == EPlayerColors::Type::BLACK_PLAYER)
-		{
-			return 20 + gameState.getNumBlackKnights();
-		}
-		else
-		{
-			return 20 + gameState.getNumWhiteKnights();
-		}
+		return WIN_EVALUATION;
 	}
 	else if (winner != EPlayerColors::Type::NOTHING)	// opponent won
 	{
-		if (winner == EPlayerColors::Type::BLACK_PLAYER)
-		{
-			return -20 - gameState.getNumBlackKnights();
-		}
-		else
-		{
-			return -20 - gameState.getNumWhiteKnights();
-		}
+		return - WIN_EVALUATION;
 	}
 
 	// at this point in code, compute evaluation from white's perspective
@@ -109,9 +102,7 @@ Move BasicAlphaBeta::startAlphaBeta(GameState& gameState, int depth)
 	{
 		Move m = moves[i];													// select move
 		gameState.applyMove(m);												// apply move
-		gameState.switchCurrentPlayer();									// switch player perspective
 		int value = -alphaBeta(gameState, depth - 1, -beta, -alpha);		// continue searching
-		gameState.switchCurrentPlayer();									// switch player perspective back
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
 
 		if (value > score)		// new best move found
@@ -129,5 +120,19 @@ Move BasicAlphaBeta::startAlphaBeta(GameState& gameState, int depth)
 		}
 	}
 
+	lastRootEvaluation = score;
+
 	return bestMove;
 }
+
+#ifdef SHOW_STATUS_INFO
+int BasicAlphaBeta::getRootEvaluation()
+{
+	return lastRootEvaluation;
+}
+
+int BasicAlphaBeta::getWinEvaluation()
+{
+	return WIN_EVALUATION;
+}
+#endif // SHOW_STATUS_INFO

@@ -3,6 +3,8 @@
 #include <vector>
 
 #include <QtWidgets/QMainWindow>
+#include <qlabel>
+
 #include "AiEngine.h"
 #include "GameBoardButton.h"
 #include "GameConstants.h"
@@ -75,4 +77,8 @@ private:
 	QAction* whitePlayerAiControl;
 	/** Option to toggle if manual control of the black player is allowed */
 	QAction* whitePlayerManualControl;
+
+	// Status Bar
+	/** The label in the status bar that will tell the user when an AI engine has detected a win or a loss */
+	QLabel* winDetectionLabel;
 };

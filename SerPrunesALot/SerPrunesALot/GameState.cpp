@@ -45,10 +45,14 @@ void GameState::applyMove(const Move& move)
 		{
 			loc.x = move.to.x;
 			loc.y = move.to.y;
+
+			// before returning, switch the current player
+			switchCurrentPlayer();
 			return;
 		}
 	}
 
+	switchCurrentPlayer();
 	LOG_ERROR("Did not change the data of any previous knight location in GameState::applyMove()")
 }
 
@@ -327,6 +331,9 @@ void GameState::switchCurrentPlayer()
 
 void GameState::undoMove(const Move& move)
 {
+	// switch current player back
+	switchCurrentPlayer();
+
 	// give opponent piece back if we captured something
 	if (move.captured)
 	{
