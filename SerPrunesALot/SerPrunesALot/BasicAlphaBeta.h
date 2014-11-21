@@ -4,6 +4,9 @@
 
 #include "AiEngine.h"
 
+/**
+ * A very basic Alpha Beta engine. Does not use any enhancements.
+ */
 class BasicAlphaBeta : public AiEngine
 {
 public:
@@ -20,15 +23,11 @@ private:
 	/** The evaluation of the root node during the last search */
 	int lastRootEvaluation;
 
-#ifdef GATHER_STATISTICS
+	// variables used for gathering and logging statistics
 	int nodesVisited;
-
-#ifdef LOG_STATS_END_OF_MATCH
 	int64_t totalNodesVisited;
 	double totalTimeSpent;
 	int turnsPlayed;
-#endif // LOG_STATS_END_OF_MATCH
-#endif // GATHER_STATISTICS
 
 	/**
 	 * Continues alpha-beta search, given the game state, maximum search depth, and current alpha and beta values.
