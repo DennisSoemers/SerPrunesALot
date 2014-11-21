@@ -10,10 +10,8 @@ public:
 	/** Uses basic Alpha Beta algorithm to choose a move */
 	virtual Move chooseMove(GameState& gameState);
 
-#ifdef SHOW_STATUS_INFO
 	virtual int getRootEvaluation();
 	virtual int getWinEvaluation();
-#endif // SHOW_STATUS_INFO
 
 private:
 	/** The evaluation of the root node during the last search */

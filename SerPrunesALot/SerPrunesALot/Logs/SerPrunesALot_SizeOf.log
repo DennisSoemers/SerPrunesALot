@@ -1,0 +1,5 @@
+Size of int = 4 bytes
+Size of long = 4 bytes
+Size of long long = 8 bytes
+Size of int32_t = 4 bytes
+Size of int64_t = 8 bytes

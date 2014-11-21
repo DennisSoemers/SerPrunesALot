@@ -12,7 +12,7 @@ BasicAlphaBeta::BasicAlphaBeta() : lastRootEvaluation(0)
 
 Move BasicAlphaBeta::chooseMove(GameState& gameState)
 {
-	return startAlphaBeta(gameState, 7);
+	return startAlphaBeta(gameState, 6);
 }
 
 int BasicAlphaBeta::alphaBeta(GameState& gameState, int depth, int alpha, int beta)
@@ -125,7 +125,6 @@ Move BasicAlphaBeta::startAlphaBeta(GameState& gameState, int depth)
 	return bestMove;
 }
 
-#ifdef SHOW_STATUS_INFO
 int BasicAlphaBeta::getRootEvaluation()
 {
 	return lastRootEvaluation;
@@ -135,4 +134,3 @@ int BasicAlphaBeta::getWinEvaluation()
 {
 	return WIN_EVALUATION;
 }
-#endif // SHOW_STATUS_INFO

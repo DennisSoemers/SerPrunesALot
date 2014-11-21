@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <inttypes.h>
 
 #include "StringBuilder.h"
 
@@ -12,6 +13,7 @@
 #define LOG_MEMORY_USAGE() Logger::Instance().dumpMemoryUsage();
 #define LOG_MESSAGE(message) Logger::Instance().log(message);
 #define LOG_ERROR(message) Logger::Instance().logError(message);
+#define LOG_SIZE_OF_INFO() Logger::Instance().logSizeOfInfo();
 
 class Logger
 {
@@ -46,7 +48,7 @@ public:
 	inline void log(const std::string &message)
 	{
 #ifdef ALLOW_LOGGING
-		std::ofstream output("SerPrunesALot.log", std::ios::ate | std::ios::app);
+		std::ofstream output("Logs\\SerPrunesALot.log", std::ios::ate | std::ios::app);
 		output << message << std::endl;
 		output.close();
 #endif
@@ -55,8 +57,21 @@ public:
 	inline void logError(const std::string &message)
 	{
 #ifdef ALLOW_LOGGING
-		std::ofstream output("SerPrunesALotERRORS.log", std::ios::ate | std::ios::app);
+		std::ofstream output("Logs\\SerPrunesALot_ERRORS.log", std::ios::ate | std::ios::app);
 		output << message << std::endl;
+		output.close();
+#endif
+	}
+
+	inline void logSizeOfInfo()
+	{
+#ifdef ALLOW_LOGGING
+		std::ofstream output("Logs\\SerPrunesALot_SizeOf.log", std::ios::ate | std::ios::app);
+		output << (StringBuilder() << "Size of int = " << sizeof(int) << " bytes").getString() << std::endl;
+		output << (StringBuilder() << "Size of long = " << sizeof(long) << " bytes").getString() << std::endl;
+		output << (StringBuilder() << "Size of long long = " << sizeof(long long) << " bytes").getString() << std::endl;
+		output << (StringBuilder() << "Size of int32_t = " << sizeof(int32_t) << " bytes").getString() << std::endl;
+		output << (StringBuilder() << "Size of int64_t = " << sizeof(int64_t) << " bytes").getString() << std::endl;
 		output.close();
 #endif
 	}
@@ -66,11 +81,15 @@ private:
 	{
 #ifdef ALLOW_LOGGING
 		std::ofstream output;
-		output.open("SerPrunesALot.log");
+		output.open("Logs\\SerPrunesALot.log");
 		output.close();
 
 		std::ofstream outputErrors;
-		outputErrors.open("SerPrunesALotERRORS.log");
+		outputErrors.open("Logs\\SerPrunesALot_ERRORS.log");
+		outputErrors.close();
+
+		std::ofstream outputSizeOf;
+		outputErrors.open("Logs\\SerPrunesALot_SizeOf.log");
 		outputErrors.close();
 #endif
 	}

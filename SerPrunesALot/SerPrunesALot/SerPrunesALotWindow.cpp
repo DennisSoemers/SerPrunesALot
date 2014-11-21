@@ -154,6 +154,9 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 
 	// Initialize the board for new game
 	initBoard();
+
+	// initialize logging
+	LOG_SIZE_OF_INFO()
 }
 
 SerPrunesALotWindow::~SerPrunesALotWindow()
@@ -288,23 +291,17 @@ void SerPrunesALotWindow::playTurnAi()
 		return;
 	}
 
-#ifdef SHOW_STATUS_INFO
 	statusBar()->showMessage("Running AI engine...");
-#endif // SHOW_STATUS_INFO
 
 	// let our AI Engine choose a move
 	Move move = aiEngine->chooseMove(currentGameState);
 
 	if (move == INVALID_MOVE)		// means game is already over
 	{
-#ifdef SHOW_STATUS_INFO
 		statusBar()->showMessage("Game ended!");
-#endif // SHOW_STATUS_NFO
-
 		return;
 	}
 
-#ifdef SHOW_STATUS_INFO
 	statusBar()->showMessage("Waiting for input...");
 	int rootEvaluation = aiEngine->getRootEvaluation();
 
@@ -341,7 +338,6 @@ void SerPrunesALotWindow::playTurnAi()
 			winDetectionLabel->setText(QString::fromStdString(StringBuilder() << "Black player evaluates this match: " << rootEvaluation));
 		}
 	}
-#endif // SHOW_STATUS_INFO
 
 	// revert all currently highlighted buttons back to their normal color
 	for (GameBoardButton* highlighted : highlightedButtons)

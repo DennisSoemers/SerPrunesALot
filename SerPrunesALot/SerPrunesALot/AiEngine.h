@@ -25,7 +25,6 @@ public:
 	 */
 	virtual Move chooseMove(GameState& gameState) = 0;
 
-#ifdef SHOW_STATUS_INFO
 	/**
 	 * Virtual method that should be implemented to return the evaluation associated
 	 * with a won game.
@@ -37,5 +36,4 @@ public:
 	 * root node during the last time the engine was asked to choose a move.
 	 */
 	virtual int getRootEvaluation() = 0;
-#endif
 };
