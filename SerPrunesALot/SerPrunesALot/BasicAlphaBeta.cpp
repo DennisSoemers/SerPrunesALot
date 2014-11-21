@@ -1,5 +1,7 @@
 #include "BasicAlphaBeta.h"
+#include "Logger.h"
 #include "MathConstants.h"
+#include "Timer.hpp"
 
 /** 
  * The evaluation corresponding to a won game. 
@@ -7,16 +9,50 @@
  */ 
 #define WIN_EVALUATION 20
 
+/**
+ * The depth to which the engine should search the game tree.
+ */
+#define SEARCH_DEPTH 6
+
 BasicAlphaBeta::BasicAlphaBeta() : lastRootEvaluation(0)
 {}
 
 Move BasicAlphaBeta::chooseMove(GameState& gameState)
 {
-	return startAlphaBeta(gameState, 6);
+#ifdef LOG_STATISTICS
+	if (gameState.getCurrentPlayer() == EPlayerColors::Type::BLACK_PLAYER)
+	{
+		LOG_MESSAGE(StringBuilder() << "Basic Alpha Beta engine searching move for Black Player")
+	}
+	else
+	{
+		LOG_MESSAGE(StringBuilder() << "Basic Alpha Beta engine searching move for White Player")
+	}
+
+	LOG_MESSAGE(StringBuilder() << "Search depth:					" << SEARCH_DEPTH)
+
+	nodesVisited = 0;
+	Timer timer;
+	timer.start();
+	Move moveToPlay = startAlphaBeta(gameState, SEARCH_DEPTH);
+	timer.stop();
+
+	LOG_MESSAGE(StringBuilder() << "Number of nodes visited:			" << nodesVisited)
+	LOG_MESSAGE(StringBuilder() << "Time spent:					" << timer.getElapsedTimeInMilliSec() << " ms")
+	LOG_MESSAGE("")
+
+	return moveToPlay;
+#else
+	return startAlphaBeta(gameState, SEARCH_DEPTH);
+#endif // LOG_STATISTICS
 }
 
 int BasicAlphaBeta::alphaBeta(GameState& gameState, int depth, int alpha, int beta)
 {
+#ifdef LOG_STATISTICS
+	++nodesVisited;
+#endif // LOG_STATISTICS
+
 	EPlayerColors::Type winner = gameState.getWinner();
 
 	// stop search if we reached max depth or have found a winner

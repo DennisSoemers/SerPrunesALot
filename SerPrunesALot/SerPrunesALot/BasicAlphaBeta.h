@@ -17,6 +17,10 @@ private:
 	/** The evaluation of the root node during the last search */
 	int lastRootEvaluation;
 
+#ifdef LOG_STATISTICS
+	int nodesVisited;
+#endif
+
 	/**
 	 * Continues alpha-beta search, given the game state, maximum search depth, and current alpha and beta values.
 	 * Returns the node's evaluation.

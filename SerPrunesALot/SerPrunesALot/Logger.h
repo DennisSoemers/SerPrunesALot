@@ -3,6 +3,7 @@
 #include <fstream>
 #include <inttypes.h>
 
+#include "Options.h"
 #include "StringBuilder.h"
 
 #define NOMINMAX
