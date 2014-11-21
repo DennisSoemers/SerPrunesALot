@@ -94,6 +94,9 @@
     <ClCompile Include="BasicAlphaBeta.cpp">
       <Filter>Source Files\AI</Filter>
     </ClCompile>
+    <ClCompile Include="AlphaBetaTT.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="SerPrunesALot.ui">
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="Options.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AlphaBetaTT.h">
+      <Filter>Source Files\AI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

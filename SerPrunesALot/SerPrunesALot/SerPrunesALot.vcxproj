@@ -76,6 +76,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AlphaBetaTT.cpp" />
     <ClCompile Include="BasicAlphaBeta.cpp" />
     <ClCompile Include="BoardLocation.cpp" />
     <ClCompile Include="GameBoardButton.cpp" />
@@ -129,6 +130,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AiEngine.h" />
+    <ClInclude Include="AlphaBetaTT.h" />
     <ClInclude Include="BasicAlphaBeta.h" />
     <ClInclude Include="BoardLocation.h" />
     <CustomBuild Include="GameBoardButton.h">

@@ -36,4 +36,7 @@ public:
 	 * root node during the last time the engine was asked to choose a move.
 	 */
 	virtual int getRootEvaluation() = 0;
+
+	/** Logs statistics gathered by the AI engine at the end of the match */
+	virtual void logEndOfMatchStats() = 0;
 };

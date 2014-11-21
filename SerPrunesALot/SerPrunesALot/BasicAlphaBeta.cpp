@@ -14,12 +14,19 @@
  */
 #define SEARCH_DEPTH 6
 
-BasicAlphaBeta::BasicAlphaBeta() : lastRootEvaluation(0)
+BasicAlphaBeta::BasicAlphaBeta() : lastRootEvaluation(0), totalNodesVisited(0), totalTimeSpent(0.0), turnsPlayed(0)
 {}
 
 Move BasicAlphaBeta::chooseMove(GameState& gameState)
 {
-#ifdef LOG_STATISTICS
+#ifdef GATHER_STATISTICS
+	nodesVisited = 0;
+	Timer timer;
+	timer.start();
+	Move moveToPlay = startAlphaBeta(gameState, SEARCH_DEPTH);
+	timer.stop();
+
+#ifdef LOG_STATS_PER_TURN
 	if (gameState.getCurrentPlayer() == EPlayerColors::Type::BLACK_PLAYER)
 	{
 		LOG_MESSAGE(StringBuilder() << "Basic Alpha Beta engine searching move for Black Player")
@@ -30,28 +37,28 @@ Move BasicAlphaBeta::chooseMove(GameState& gameState)
 	}
 
 	LOG_MESSAGE(StringBuilder() << "Search depth:					" << SEARCH_DEPTH)
-
-	nodesVisited = 0;
-	Timer timer;
-	timer.start();
-	Move moveToPlay = startAlphaBeta(gameState, SEARCH_DEPTH);
-	timer.stop();
-
 	LOG_MESSAGE(StringBuilder() << "Number of nodes visited:			" << nodesVisited)
 	LOG_MESSAGE(StringBuilder() << "Time spent:					" << timer.getElapsedTimeInMilliSec() << " ms")
 	LOG_MESSAGE("")
+#endif // LOG_STATS_PER_TURN
+
+#ifdef LOG_STATS_END_OF_MATCH
+	totalNodesVisited += nodesVisited;
+	totalTimeSpent += timer.getElapsedTimeInMilliSec();
+	++turnsPlayed;
+#endif // LOG_STATS_END_OF_MATCH
 
 	return moveToPlay;
 #else
 	return startAlphaBeta(gameState, SEARCH_DEPTH);
-#endif // LOG_STATISTICS
+#endif // GATHER_STATISTICS
 }
 
 int BasicAlphaBeta::alphaBeta(GameState& gameState, int depth, int alpha, int beta)
 {
-#ifdef LOG_STATISTICS
+#ifdef GATHER_STATISTICS
 	++nodesVisited;
-#endif // LOG_STATISTICS
+#endif // GATHER_STATISTICS
 
 	EPlayerColors::Type winner = gameState.getWinner();
 
@@ -169,4 +176,15 @@ int BasicAlphaBeta::getRootEvaluation()
 int BasicAlphaBeta::getWinEvaluation()
 {
 	return WIN_EVALUATION;
+}
+
+void BasicAlphaBeta::logEndOfMatchStats()
+{
+#ifdef LOG_STATS_END_OF_MATCH
+	LOG_MESSAGE("Basic Alpha Beta engine END OF GAME stats:")
+	LOG_MESSAGE(StringBuilder() << "Search depth:					" << SEARCH_DEPTH)
+	LOG_MESSAGE(StringBuilder() << "Number of nodes visited:			" << totalNodesVisited)
+	LOG_MESSAGE(StringBuilder() << "Time spent:					" << totalTimeSpent << " ms")
+	LOG_MESSAGE("")
+#endif // LOG_STATS_END_OF_MATCH
 }

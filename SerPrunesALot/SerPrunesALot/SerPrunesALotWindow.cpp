@@ -365,6 +365,14 @@ void SerPrunesALotWindow::playTurnAi()
 	highlightedButtons.push_back(boardButtons[move.to.y][move.to.x]);
 
 	selectedButton = nullptr;
+
+	// if game is over, and we want to log stats at end of game, do so
+#ifdef LOG_STATS_END_OF_MATCH
+	if (currentGameState.getWinner() != EPlayerColors::Type::NOTHING)
+	{
+		aiEngine->logEndOfMatchStats();
+	}
+#endif
 }
 
 void SerPrunesALotWindow::resizeEvent(QResizeEvent* event)

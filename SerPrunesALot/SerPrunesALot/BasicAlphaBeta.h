@@ -1,5 +1,7 @@
 #pragma once
 
+#include <inttypes.h>
+
 #include "AiEngine.h"
 
 class BasicAlphaBeta : public AiEngine
@@ -12,14 +14,21 @@ public:
 
 	virtual int getRootEvaluation();
 	virtual int getWinEvaluation();
+	virtual void logEndOfMatchStats();
 
 private:
 	/** The evaluation of the root node during the last search */
 	int lastRootEvaluation;
 
-#ifdef LOG_STATISTICS
+#ifdef GATHER_STATISTICS
 	int nodesVisited;
-#endif
+
+#ifdef LOG_STATS_END_OF_MATCH
+	int64_t totalNodesVisited;
+	double totalTimeSpent;
+	int turnsPlayed;
+#endif // LOG_STATS_END_OF_MATCH
+#endif // GATHER_STATISTICS
 
 	/**
 	 * Continues alpha-beta search, given the game state, maximum search depth, and current alpha and beta values.
