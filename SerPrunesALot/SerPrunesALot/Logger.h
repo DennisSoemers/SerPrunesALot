@@ -14,7 +14,8 @@
 #define LOG_MEMORY_USAGE() Logger::Instance().dumpMemoryUsage();
 #define LOG_MESSAGE(message) Logger::Instance().log(message);
 #define LOG_ERROR(message) Logger::Instance().logError(message);
-#define LOG_SIZE_OF_INFO() Logger::Instance().logSizeOfInfo();
+#define LOG_SIZE_OF_PRIMITIVES() Logger::Instance().logSizeOfPrimitives();
+#define LOG_SIZE_OF(type) Logger::Instance().logSizeOf(sizeof(type), #type);
 
 class Logger
 {
@@ -64,7 +65,16 @@ public:
 #endif
 	}
 
-	inline void logSizeOfInfo()
+	inline void logSizeOf(size_t size, std::string type)
+	{
+#ifdef ALLOW_LOGGING
+		std::ofstream output("Logs\\SerPrunesALot_SizeOf.log", std::ios::ate | std::ios::app);
+		output << (StringBuilder() << "Size of " << type << " = " << size << " bytes").getString() << std::endl;
+		output.close();
+#endif
+	}
+
+	inline void logSizeOfPrimitives()
 	{
 #ifdef ALLOW_LOGGING
 		std::ofstream output("Logs\\SerPrunesALot_SizeOf.log", std::ios::ate | std::ios::app);

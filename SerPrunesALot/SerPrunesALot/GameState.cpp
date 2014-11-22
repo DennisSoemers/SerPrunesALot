@@ -1,10 +1,14 @@
 #include "GameState.h"
 #include "Logger.h"
+#include "RNG.h"
+
+std::vector<std::vector<uint64_t>> GameState::zobristRandomNums = std::vector<std::vector<uint64_t>>();
 
 GameState::GameState()
 	: board(BOARD_HEIGHT, std::vector<EPlayerColors::Type>(BOARD_WIDTH)), 
 	blackPlayer(EPlayerColors::Type::BLACK_PLAYER), 
 	whitePlayer(EPlayerColors::Type::WHITE_PLAYER), 
+	zobristHash(0),
 	currentPlayer(EPlayerColors::Type::WHITE_PLAYER)
 {
 	// initialize board as empty
@@ -17,6 +21,30 @@ GameState::GameState()
 			board[i][j] = EPlayerColors::Type::NOTHING;
 		}
 	}
+
+	// initialize random numbers for Zobrist hashing if not done yet
+	if (zobristRandomNums.size() == 0)
+	{
+		zobristRandomNums.reserve(BOARD_HEIGHT * BOARD_WIDTH);
+
+		for (int y = 0; y < BOARD_HEIGHT; ++y)
+		{
+			for (int x = 0; x < BOARD_WIDTH; ++x)
+			{
+				// add a vector corresponding to this board location
+				std::vector<uint64_t> v;
+				v.reserve(NUM_PLAYERS);
+
+				for (int i = 0; i < NUM_PLAYERS; ++i)
+				{
+					// add a random number corresponding to v's board location and the i'th player
+					v.push_back(RNG::randomUint_64());
+				}
+
+				zobristRandomNums.push_back(v);
+			}
+		}
+	}
 }
 
 GameState::~GameState()
@@ -27,12 +55,20 @@ void GameState::applyMove(const Move& move)
 	// remove opponent piece if we're capturing something
 	if (move.captured)
 	{
-		getPlayer(getOpponentColor(currentPlayer)).removeKnight(move.to);
+		EPlayerColors::Type opponentColor = getOpponentColor(currentPlayer);
+		getPlayer(opponentColor).removeKnight(move.to);
+
+		// account for removal of enemy piece in the zobrist hash value
+		zobristHash ^= zobristRandomNums[move.to.y * BOARD_HEIGHT + move.to.x][opponentColor - 1];
 	}
 
 	// change the board data
 	board[move.from.y][move.from.x] = EPlayerColors::Type::NOTHING;
 	board[move.to.y][move.to.x] = currentPlayer;
+
+	// account for movement of our own piece in the zobrist hash value
+	zobristHash ^= zobristRandomNums[move.to.y * BOARD_HEIGHT + move.to.x][currentPlayer - 1];
+	zobristHash ^= zobristRandomNums[move.from.y * BOARD_HEIGHT + move.from.x][currentPlayer - 1];
 
 	// find the ''from'' location in our list of knight locations, and update it to the ''to'' location
 	std::vector<BoardLocation>& knightLocations = getPlayer(currentPlayer).getKnightLocations();
@@ -284,11 +320,19 @@ EPlayerColors::Type GameState::getWinner() const
 	return EPlayerColors::Type::NOTHING;
 }
 
+uint64_t GameState::getZobrist() const
+{
+	return zobristHash;
+}
+
 void GameState::reset()
 {
 	// make sure both players have no Knights from any previous games
 	blackPlayer.removeAllKnights();
 	whitePlayer.removeAllKnights();
+
+	// set current zobrist hash value to all bits 0, then construct the correct initial value whilst constructing board
+	zobristHash ^= zobristHash;
 
 	// fill top 2 rows with black pieces and bottom 2 rows with white pieces
 	for (int i = 0; i < BOARD_WIDTH; ++i)
@@ -302,6 +346,12 @@ void GameState::reset()
 		board[BOARD_HEIGHT - 2][i] = EPlayerColors::Type::WHITE_PLAYER;
 		whitePlayer.addKnight(BoardLocation(i, BOARD_HEIGHT - 1));
 		whitePlayer.addKnight(BoardLocation(i, BOARD_HEIGHT - 2));
+
+		// update zobrist hash value
+		zobristHash ^= zobristRandomNums[0 * BOARD_HEIGHT + i][EPlayerColors::Type::BLACK_PLAYER - 1];
+		zobristHash ^= zobristRandomNums[1 * BOARD_HEIGHT + i][EPlayerColors::Type::BLACK_PLAYER - 1];
+		zobristHash ^= zobristRandomNums[(BOARD_HEIGHT - 1) * BOARD_HEIGHT + i][EPlayerColors::Type::WHITE_PLAYER - 1];
+		zobristHash ^= zobristRandomNums[(BOARD_HEIGHT - 2) * BOARD_HEIGHT + i][EPlayerColors::Type::WHITE_PLAYER - 1];
 	}
 
 	// empty the middle section
@@ -340,6 +390,9 @@ void GameState::undoMove(const Move& move)
 		EPlayerColors::Type opponentColor = getOpponentColor(currentPlayer);
 		getPlayer(opponentColor).addKnight(move.to);
 		board[move.to.y][move.to.x] = opponentColor;
+
+		// account for removal of enemy piece in the zobrist hash value
+		zobristHash ^= zobristRandomNums[move.to.y * BOARD_HEIGHT + move.to.x][opponentColor - 1];
 	}
 	else
 	{
@@ -348,6 +401,10 @@ void GameState::undoMove(const Move& move)
 
 	// move our piece back to where we came from
 	board[move.from.y][move.from.x] = currentPlayer;
+
+	// account for movement of our own piece in the zobrist hash value
+	zobristHash ^= zobristRandomNums[move.to.y * BOARD_HEIGHT + move.to.x][currentPlayer - 1];
+	zobristHash ^= zobristRandomNums[move.from.y * BOARD_HEIGHT + move.from.x][currentPlayer - 1];
 
 	// find the ''to'' location in our list of knight locations, and revert it to the ''from'' location
 	std::vector<BoardLocation>& knightLocations = getPlayer(currentPlayer).getKnightLocations();

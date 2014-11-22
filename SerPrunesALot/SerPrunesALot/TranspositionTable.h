@@ -1,0 +1,128 @@
+#pragma once
+
+#include <inttypes.h>
+
+#include "Logger.h"
+#include "Move.h"
+
+/**
+ * A 64-bit hash value, with 20 bits as primary hash code and 44 bits as secondary hash code
+ *
+ * The primary and secondary hash codes can be retrieved individually from the hashCodes field,
+ * and the entire hash value (consisting of both codes) can be retrieved as the value field.
+ */
+union HashValue
+{
+	// Allows individual access to primary and secondary codes
+	struct HashCodes
+	{
+		uint64_t primary : 20;
+		uint64_t secondary : 44;
+	} hashCodes;
+
+	// the entire 64-bits value
+	uint64_t value;
+
+	HashValue(uint64_t value) : value(value){}
+
+	/** Overloaded == operator. Considers two HashValues to be equal if the full value is equal */
+	inline bool operator==(const HashValue& other) const
+	{
+		return (value == other.value);
+	}
+};
+
+// enum for the different possible value types
+namespace EValue
+{
+	enum Type : uint8_t
+	{
+		REAL,
+		LOWER_BOUND,
+		UPPER_BOUND,
+
+		INVALID_TYPE
+	};
+}
+
+/**
+ * Contains the data for a single node of the game tree to be stored in
+ * the Transposition Table
+ */
+struct TableData
+{
+public:
+	TableData::TableData() : bestMove(INVALID_MOVE), hashValue(0), value(0), valueType(EValue::Type::INVALID_TYPE), depth(0)
+	{}
+
+	Move bestMove;
+	HashValue hashValue;
+	int value;
+	EValue::Type valueType;
+	uint8_t depth;
+
+	/** 
+	 * Returns true iff the data is valid. 
+	 * Data is considered to be valid iff the valueType does not equal EValue::Type::INVALID_TYPE
+	 */
+	bool isValid() const;
+
+private:
+	// don't want accidental copying of the Table Data
+	TableData(const TableData&);
+	TableData& operator=(const TableData&);
+};
+
+/**
+ * An entry in the Transposition Table.
+ *
+ * Every entry has room to store the required data for two pieces of TableData.
+ * The replacement scheme Two-Deep is used, which always preserves the
+ * node with the deepest search depth and the newest node.
+ */
+struct TableEntry
+{
+	TableData data1;
+	TableData data2;
+};
+
+/**
+ * A transposition table
+ *
+ * Uses 64-bit hash values, with the first 20 bits as primary hash code
+ * and the remaining 44 bits as secondary hash code.
+ *
+ * The table has space for 2^20 entries.
+ */
+class TranspositionTable
+{
+public:
+	TranspositionTable();
+	~TranspositionTable();
+
+	/** Clears the transposition table */
+	void clear();
+
+	/** 
+	 * Retrieves the data corresponding to the given zobrist hash value in the Transposition Table
+	 * Data is returned by const reference, and cannot be copied!
+	 *
+	 * Will return data that returns false for isValid() if no data was found with the correct key
+	 */
+	const TableData& retrieve(uint64_t zobrist) const;
+
+	/**
+	 * Checkes whether or not the given new data should be stored, and if so, stores it in the table.
+	 */
+	void storeData(Move bestMove, uint64_t zobrist, int value, EValue::Type valueType, int depth);
+
+private:
+	TableEntry* table;
+
+	// don't want accidental copying of the Transposition Table
+	TranspositionTable(const TranspositionTable&);
+	TranspositionTable& operator=(const TranspositionTable&);
+};
+
+// invalid table data
+static TableData INVALID_TABLE_DATA;

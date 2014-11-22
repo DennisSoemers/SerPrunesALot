@@ -20,7 +20,7 @@ struct Move
 
 	Move(BoardLocation from, BoardLocation to, bool captured);
 
-	/** Overloaded == operator */
+	/** Overloaded == operator. Considers two objects to be equal iff all fields are equal */
 	inline bool operator==(const Move& other) const
 	{
 		return ((from == other.from) && (to == other.to) && (captured == other.captured));

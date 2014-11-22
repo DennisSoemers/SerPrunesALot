@@ -1,0 +1,31 @@
+Transposition Table occupies 8.38861e+007 bytes (= 80 MB)
+Basic Alpha Beta engine searching move for White Player
+Search depth:					6
+Number of nodes visited:			757293
+Time spent:					219.281 ms
+
+Basic Alpha Beta engine searching move for Black Player
+Search depth:					6
+Number of nodes visited:			741756
+Time spent:					218.178 ms
+
+Basic Alpha Beta engine searching move for White Player
+Search depth:					6
+Number of nodes visited:			1035051
+Time spent:					264.407 ms
+
+Basic Alpha Beta engine searching move for Black Player
+Search depth:					6
+Number of nodes visited:			1069353
+Time spent:					299.845 ms
+
+Basic Alpha Beta engine searching move for White Player
+Search depth:					6
+Number of nodes visited:			1470266
+Time spent:					385.901 ms
+
+Basic Alpha Beta engine searching move for Black Player
+Search depth:					6
+Number of nodes visited:			1558006
+Time spent:					386.601 ms
+

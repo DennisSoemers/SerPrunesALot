@@ -1,5 +1,6 @@
 #pragma once
 
+#include <inttypes.h>
 #include <vector>
 
 #include "BoardLocation.h"
@@ -68,6 +69,8 @@ public:
 	Player& getPlayer(EPlayerColors::Type playerColor);
 	/** Returns the color of the player that won the game. Returns EPlayerColors::Type::NOTHING if the game didn't end yet */
 	EPlayerColors::Type getWinner() const;
+	/** Returns the Zobrist Hash Value of the current game state */
+	uint64_t getZobrist() const;
 
 	/** Resets the game state to the starting setup */
 	void reset();
@@ -83,6 +86,9 @@ public:
 	void undoMove(const Move& move);
 
 private:
+	/** Matrix of random numbers corresponding to board locations and player colors. Used for computing Zobrist Hash Values*/
+	static std::vector<std::vector<uint64_t>> zobristRandomNums;
+
 	/** Matrix of EPlayerColors::Types encoding the board. */
 	std::vector<std::vector<EPlayerColors::Type>> board;
 
@@ -90,6 +96,9 @@ private:
 	Player blackPlayer;
 	/** The white player */
 	Player whitePlayer;
+
+	/** The Zobrist Hash Value of this game state */
+	uint64_t zobristHash;
 
 	/** The player whose turn it is */
 	EPlayerColors::Type currentPlayer;

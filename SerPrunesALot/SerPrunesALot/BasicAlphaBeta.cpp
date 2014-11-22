@@ -12,7 +12,7 @@
 /**
  * The depth to which the engine should search the game tree.
  */
-#define SEARCH_DEPTH 6
+#define SEARCH_DEPTH 7
 
 BasicAlphaBeta::BasicAlphaBeta() : lastRootEvaluation(0), totalNodesVisited(0), totalTimeSpent(0.0), turnsPlayed(0)
 {}

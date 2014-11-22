@@ -53,6 +53,9 @@
     <Filter Include="Source Files\Utils\Math">
       <UniqueIdentifier>{d3f52af1-6c1c-45f1-98b2-ab8454a61219}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utils\Math\RNG">
+      <UniqueIdentifier>{24c256e8-8ea7-4e9d-8168-28212ae60f92}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -96,6 +99,12 @@
     </ClCompile>
     <ClCompile Include="AlphaBetaTT.cpp">
       <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="TranspositionTable.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="RNG.cpp">
+      <Filter>Source Files\Utils\Math\RNG</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -157,6 +166,12 @@
     </ClInclude>
     <ClInclude Include="AlphaBetaTT.h">
       <Filter>Source Files\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="TranspositionTable.h">
+      <Filter>Source Files\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="RNG.h">
+      <Filter>Source Files\Utils\Math\RNG</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

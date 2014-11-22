@@ -3,6 +3,7 @@
 #include <inttypes.h>
 
 #include "AiEngine.h"
+#include "TranspositionTable.h"
 
 /**
  * Similar to the BasicAlphaBeta engine, but enhanced to use a Transposition Table
@@ -20,6 +21,9 @@ public:
 	virtual void logEndOfMatchStats();
 
 private:
+	/** The engine's Transposition Table */
+	TranspositionTable transpositionTable;
+
 	/** The evaluation of the root node during the last search */
 	int lastRootEvaluation;
 

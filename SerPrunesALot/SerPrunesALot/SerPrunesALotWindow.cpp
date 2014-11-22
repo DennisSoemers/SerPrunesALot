@@ -4,11 +4,15 @@
 #include "QIcon.h"
 #include "QLabel.h"
 
+#include <cmath>
+
 #include "Options.h"
 
+#include "AlphaBetaTT.h"
 #include "BasicAlphaBeta.h"
 #include "Logger.h"
 #include "Move.h"
+#include "TranspositionTable.h"
 
 SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	: QMainWindow(parent),
@@ -150,13 +154,18 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	statusBar()->addPermanentWidget(winDetectionLabel);
 
 	// create AI Engine
-	aiEngine = new BasicAlphaBeta();
+	aiEngine = new AlphaBetaTT();
 
 	// Initialize the board for new game
 	initBoard();
 
-	// initialize logging
-	LOG_SIZE_OF_INFO()
+	// log some initial info
+	LOG_SIZE_OF_PRIMITIVES()
+	LOG_SIZE_OF(Move)
+	LOG_SIZE_OF(HashValue)
+	LOG_SIZE_OF(TableData)
+	LOG_SIZE_OF(TableEntry)
+	LOG_MESSAGE(StringBuilder() << "Transposition Table occupies " << sizeof(TableEntry) * TRANSPOSITION_TABLE_NUM_ENTRIES << " bytes (= " << sizeof(TableEntry) * std::pow(2.0, 20.0) / 1024.0 / 1024.0 << " MB)")
 }
 
 SerPrunesALotWindow::~SerPrunesALotWindow()

@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "AlphaBetaTT.h"
 #include "Logger.h"
 #include "MathConstants.h"
@@ -12,13 +14,15 @@
 /**
 * The depth to which the engine should search the game tree.
 */
-#define SEARCH_DEPTH 6
+#define SEARCH_DEPTH 7
 
-AlphaBetaTT::AlphaBetaTT() : lastRootEvaluation(0), totalNodesVisited(0), totalTimeSpent(0.0), turnsPlayed(0)
+AlphaBetaTT::AlphaBetaTT() : transpositionTable(), lastRootEvaluation(0), totalNodesVisited(0), totalTimeSpent(0.0), turnsPlayed(0)
 {}
 
 Move AlphaBetaTT::chooseMove(GameState& gameState)
 {
+	transpositionTable.clear();	// clean up data from previous searches
+
 #ifdef GATHER_STATISTICS
 	nodesVisited = 0;
 	Timer timer;
@@ -60,6 +64,36 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	++nodesVisited;
 #endif // GATHER_STATISTICS
 
+	const TableData& tableData = transpositionTable.retrieve(gameState.getZobrist());
+	// true iff relevant data was retrieved from the Transposition Table
+	bool tableDataValid = tableData.isValid();
+
+	if (tableDataValid)
+	{
+		if (tableData.depth >= depth)	// ensure table stored in data resulted from a deep enough search
+		{
+			if (tableData.valueType != EValue::Type::UPPER_BOUND)		// means it's either real or lower bound
+			{
+				if (tableData.value >= beta)
+				{
+					return tableData.value;
+				}
+
+				alpha = std::max(alpha, tableData.value);
+			}
+
+			if (tableData.valueType != EValue::Type::LOWER_BOUND)		// means it's either real or upper bound
+			{
+				if (tableData.value <= alpha)
+				{
+					return tableData.value;
+				}
+
+				beta = std::min(beta, tableData.value);
+			}
+		}
+	}
+
 	EPlayerColors::Type winner = gameState.getWinner();
 
 	// stop search if we reached max depth or have found a winner
@@ -70,6 +104,7 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 
 	std::vector<Move> moves = gameState.generateAllMoves();
 	int score = MathConstants::LOW_ENOUGH_INT;
+	Move bestMove = moves.at(0);
 
 	for (int i = 0; i < moves.size(); ++i)
 	{
@@ -81,6 +116,7 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 		if (value > score)		// new best move found
 		{
 			score = value;
+			bestMove = m;
 		}
 		if (score > alpha)
 		{
@@ -90,6 +126,20 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 		{
 			break;
 		}
+	}
+
+	// Store data in Transposition Table
+	if (score <= alpha)		// found upper bound
+	{
+		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::UPPER_BOUND, depth);
+	}
+	else if (score >= beta)	// found lower bound
+	{
+		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::LOWER_BOUND, depth);
+	}
+	else					// found exact value
+	{
+		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::REAL, depth);
 	}
 
 	return score;
@@ -127,6 +177,40 @@ int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner
 
 Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 {
+	int score = MathConstants::LOW_ENOUGH_INT;
+	int alpha = MathConstants::LOW_ENOUGH_INT;
+	int beta = MathConstants::LARGE_ENOUGH_INT;
+
+	const TableData& tableData = transpositionTable.retrieve(gameState.getZobrist());
+	// true iff relevant data was retrieved from the Transposition Table
+	bool tableDataValid = tableData.isValid();
+
+	if (tableDataValid)
+	{
+		if (tableData.depth >= depth)	// ensure table stored in data resulted from a deep enough search
+		{
+			if (tableData.valueType != EValue::Type::UPPER_BOUND)		// means it's either real or lower bound
+			{
+				if (tableData.value >= beta)
+				{
+					return tableData.bestMove;
+				}
+
+				alpha = std::max(alpha, tableData.value);
+			}
+
+			if (tableData.valueType != EValue::Type::LOWER_BOUND)		// means it's either real or upper bound
+			{
+				if (tableData.value <= alpha)
+				{
+					return tableData.bestMove;
+				}
+
+				beta = std::min(beta, tableData.value);
+			}
+		}
+	}
+
 	EPlayerColors::Type winner = gameState.getWinner();
 
 	// stop search if we reached max depth or have found a winner
@@ -137,9 +221,6 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 
 	std::vector<Move> moves = gameState.generateAllMoves();
 	Move bestMove = moves.at(0);
-	int score = MathConstants::LOW_ENOUGH_INT;
-	int alpha = MathConstants::LOW_ENOUGH_INT;
-	int beta = MathConstants::LARGE_ENOUGH_INT;
 
 	for (int i = 0; i < moves.size(); ++i)
 	{
@@ -161,6 +242,20 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 		{
 			break;
 		}
+	}
+
+	// Store data in Transposition Table
+	if (score <= alpha)		// found upper bound
+	{
+		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::UPPER_BOUND, depth);
+	}
+	else if (score >= beta)	// found lower bound
+	{
+		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::LOWER_BOUND, depth);
+	}
+	else					// found exact value
+	{
+		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::REAL, depth);
 	}
 
 	lastRootEvaluation = score;

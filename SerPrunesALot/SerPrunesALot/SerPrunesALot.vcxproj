@@ -102,7 +102,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="RNG.cpp" />
     <ClCompile Include="SerPrunesALotWindow.cpp" />
+    <ClCompile Include="TranspositionTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="SerPrunesALotWindow.h">
@@ -151,8 +153,10 @@
     <ClInclude Include="Move.h" />
     <ClInclude Include="Options.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="RNG.h" />
     <ClInclude Include="StringBuilder.h" />
     <ClInclude Include="Timer.hpp" />
+    <ClInclude Include="TranspositionTable.h" />
     <ClInclude Include="VectorUtils.h" />
   </ItemGroup>
   <ItemGroup>
