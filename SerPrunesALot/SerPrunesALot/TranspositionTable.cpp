@@ -1,3 +1,4 @@
+#include "RNG.h"
 #include "TranspositionTable.h"
 
 bool TableData::isValid() const

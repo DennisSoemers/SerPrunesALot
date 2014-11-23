@@ -69,6 +69,17 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	// true iff relevant data was retrieved from the Transposition Table
 	bool tableDataValid = tableData.isValid();
 
+#ifdef VERIFY_MOVE_LEGALITY
+	if (tableDataValid && !gameState.isMoveLegal(tableData.bestMove))
+	{
+		//LOG_ERROR("ERROR: table data contains invalid move in AlphaBetaTT::alphaBetaTT()")
+		//LOG_ERROR(StringBuilder() << "Captured = " << tableData.bestMove.captured)
+		//LOG_ERROR(StringBuilder() << "From = " << tableData.bestMove.from.x << ", " << tableData.bestMove.from.y)
+		//LOG_ERROR(StringBuilder() << "To = " << tableData.bestMove.to.x << ", " << tableData.bestMove.to.y)
+		tableDataValid = false;
+	}
+#endif
+
 	if (tableDataValid)
 	{
 		if (tableData.depth >= depth)	// ensure table stored in data resulted from a deep enough search
@@ -184,6 +195,14 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 	const TableData& tableData = transpositionTable.retrieve(gameState.getZobrist());
 	// true iff relevant data was retrieved from the Transposition Table
 	bool tableDataValid = tableData.isValid();
+
+#ifdef VERIFY_MOVE_LEGALITY
+	if (tableDataValid && !gameState.isMoveLegal(tableData.bestMove))
+	{
+		LOG_ERROR("ERROR: table data contains invalid move in AlphaBetaTT::startAlphaBetaTT()")
+		tableDataValid = false;
+	}
+#endif
 
 	if (tableDataValid)
 	{

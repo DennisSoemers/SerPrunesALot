@@ -5,6 +5,9 @@
 #include "Logger.h"
 #include "Move.h"
 
+// if defined, the legality of the best move stored will be checked as an additional verification of correctness of the stored data
+#define VERIFY_MOVE_LEGALITY
+
 /**
  * A 64-bit hash value, with 20 bits as primary hash code and 44 bits as secondary hash code
  *

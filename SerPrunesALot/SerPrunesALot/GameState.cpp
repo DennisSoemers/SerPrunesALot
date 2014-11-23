@@ -45,6 +45,8 @@ GameState::GameState()
 			}
 		}
 	}
+
+	zobristPlayerNum = RNG::randomUint_64();
 }
 
 GameState::~GameState()
@@ -325,14 +327,84 @@ uint64_t GameState::getZobrist() const
 	return zobristHash;
 }
 
+bool GameState::isMoveLegal(const Move& move) const
+{
+	if (currentPlayer == getOccupier(move.to))		// cannot move to square occupied by our own knights
+	{
+		LOG_ERROR("Illegal move: already occupied")
+
+		if (move.captured)
+		{
+			LOG_ERROR("move was a capture move")
+		}
+		else
+		{
+			LOG_ERROR("move was not a capture move")
+		}
+
+		return false;
+	}
+
+	if (currentPlayer != getOccupier(move.from))	// cannot move from a location we do not occupy
+	{
+		LOG_ERROR("Illegal move: no piece in from location")
+
+			if (getOccupier(move.from) == getOpponentColor(currentPlayer))
+			{
+				LOG_ERROR("opponent did occupy the from location")
+			}
+			else
+			{
+				LOG_ERROR("opponent also didn't occupy the from location")
+			}
+
+		return false;
+	}
+
+	if (move.captured != (getOpponentColor(currentPlayer) == getOccupier(move.to)))		// must capture if enemy occupies, and cannot capture if he doesn't
+	{
+		LOG_ERROR("Illegal move: Incorrect capturing")
+		return false;
+	}
+
+	int dx = move.to.x - move.from.x;
+	int dy = move.to.y - move.from.y;
+
+	if (currentPlayer == EPlayerColors::Type::BLACK_PLAYER)		// must move down
+	{
+		if (dy == 1)
+		{
+			return (dx == -2) || (dx == 2);
+		}
+		else if (dy == 2)
+		{
+			return (dx == -1) || (dx == 1);
+		}
+	}
+	else if (currentPlayer == EPlayerColors::Type::WHITE_PLAYER)	// must move up
+	{
+		if (dy == -1)
+		{
+			return (dx == -2) || (dx == 2);
+		}
+		else if (dy == -2)
+		{
+			return (dx == -1) || (dx == 1);
+		}
+	}
+
+	LOG_ERROR("Illegal move: distance incorrect")
+	return false;
+}
+
 void GameState::reset()
 {
 	// make sure both players have no Knights from any previous games
 	blackPlayer.removeAllKnights();
 	whitePlayer.removeAllKnights();
 
-	// set current zobrist hash value to all bits 0, then construct the correct initial value whilst constructing board
-	zobristHash ^= zobristHash;
+	// set current zobrist hash value to the zobrist player number, to indicate it's white player's turn
+	zobristHash = zobristPlayerNum;
 
 	// fill top 2 rows with black pieces and bottom 2 rows with white pieces
 	for (int i = 0; i < BOARD_WIDTH; ++i)
@@ -377,6 +449,9 @@ void GameState::switchCurrentPlayer()
 	{
 		currentPlayer = EPlayerColors::Type::WHITE_PLAYER;
 	}
+
+	// update zobrist hash
+	zobristHash ^= zobristPlayerNum;
 }
 
 void GameState::undoMove(const Move& move)

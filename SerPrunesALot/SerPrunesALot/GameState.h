@@ -72,6 +72,9 @@ public:
 	/** Returns the Zobrist Hash Value of the current game state */
 	uint64_t getZobrist() const;
 
+	/** Returns true iff the given move is legal in the current game state */
+	bool isMoveLegal(const Move& move) const;
+
 	/** Resets the game state to the starting setup */
 	void reset();
 
@@ -99,6 +102,9 @@ private:
 
 	/** The Zobrist Hash Value of this game state */
 	uint64_t zobristHash;
+
+	/** A single special random number that is XORd with the zobrist hash every time the turn switches, to indicate who the current player is */
+	uint64_t zobristPlayerNum;
 
 	/** The player whose turn it is */
 	EPlayerColors::Type currentPlayer;
