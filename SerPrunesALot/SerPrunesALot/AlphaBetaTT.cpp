@@ -64,6 +64,7 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	++nodesVisited;
 #endif // GATHER_STATISTICS
 
+	int originalAlpha = alpha;
 	const TableData& tableData = transpositionTable.retrieve(gameState.getZobrist());
 	// true iff relevant data was retrieved from the Transposition Table
 	bool tableDataValid = tableData.isValid();
@@ -72,24 +73,22 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	{
 		if (tableData.depth >= depth)	// ensure table stored in data resulted from a deep enough search
 		{
-			if (tableData.valueType != EValue::Type::UPPER_BOUND)		// means it's either real or lower bound
+			if (tableData.valueType == EValue::Type::REAL)
 			{
-				if (tableData.value >= beta)
-				{
-					return tableData.value;
-				}
-
+				return tableData.value;
+			}
+			else if (tableData.valueType == EValue::Type::LOWER_BOUND)
+			{
 				alpha = std::max(alpha, tableData.value);
 			}
-
-			if (tableData.valueType != EValue::Type::LOWER_BOUND)		// means it's either real or upper bound
+			else if (tableData.valueType == EValue::Type::UPPER_BOUND)
 			{
-				if (tableData.value <= alpha)
-				{
-					return tableData.value;
-				}
-
 				beta = std::min(beta, tableData.value);
+			}
+
+			if (alpha >= beta)
+			{
+				return tableData.value;
 			}
 		}
 	}
@@ -129,15 +128,15 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	}
 
 	// Store data in Transposition Table
-	if (score <= alpha)		// found upper bound
+	if (score <= originalAlpha)		// found upper bound
 	{
 		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::UPPER_BOUND, depth);
 	}
-	else if (score >= beta)	// found lower bound
+	else if (score >= beta)			// found lower bound
 	{
 		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::LOWER_BOUND, depth);
 	}
-	else					// found exact value
+	else							// found exact value
 	{
 		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::REAL, depth);
 	}
@@ -180,6 +179,7 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 	int score = MathConstants::LOW_ENOUGH_INT;
 	int alpha = MathConstants::LOW_ENOUGH_INT;
 	int beta = MathConstants::LARGE_ENOUGH_INT;
+	int originalAlpha = alpha;
 
 	const TableData& tableData = transpositionTable.retrieve(gameState.getZobrist());
 	// true iff relevant data was retrieved from the Transposition Table
@@ -245,15 +245,15 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 	}
 
 	// Store data in Transposition Table
-	if (score <= alpha)		// found upper bound
+	if (score <= originalAlpha)		// found upper bound
 	{
 		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::UPPER_BOUND, depth);
 	}
-	else if (score >= beta)	// found lower bound
+	else if (score >= beta)			// found lower bound
 	{
 		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::LOWER_BOUND, depth);
 	}
-	else					// found exact value
+	else							// found exact value
 	{
 		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::REAL, depth);
 	}
