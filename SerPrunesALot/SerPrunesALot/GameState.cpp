@@ -331,39 +331,16 @@ bool GameState::isMoveLegal(const Move& move) const
 {
 	if (currentPlayer == getOccupier(move.to))		// cannot move to square occupied by our own knights
 	{
-		LOG_ERROR("Illegal move: already occupied")
-
-		if (move.captured)
-		{
-			LOG_ERROR("move was a capture move")
-		}
-		else
-		{
-			LOG_ERROR("move was not a capture move")
-		}
-
 		return false;
 	}
 
 	if (currentPlayer != getOccupier(move.from))	// cannot move from a location we do not occupy
 	{
-		LOG_ERROR("Illegal move: no piece in from location")
-
-			if (getOccupier(move.from) == getOpponentColor(currentPlayer))
-			{
-				LOG_ERROR("opponent did occupy the from location")
-			}
-			else
-			{
-				LOG_ERROR("opponent also didn't occupy the from location")
-			}
-
 		return false;
 	}
 
 	if (move.captured != (getOpponentColor(currentPlayer) == getOccupier(move.to)))		// must capture if enemy occupies, and cannot capture if he doesn't
 	{
-		LOG_ERROR("Illegal move: Incorrect capturing")
 		return false;
 	}
 
@@ -393,7 +370,6 @@ bool GameState::isMoveLegal(const Move& move) const
 		}
 	}
 
-	LOG_ERROR("Illegal move: distance incorrect")
 	return false;
 }
 

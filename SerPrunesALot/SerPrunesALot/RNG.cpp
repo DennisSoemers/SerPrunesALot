@@ -1,3 +1,4 @@
+#include "Logger.h"
 #include "RNG.h"
 
 #include <time.h>
@@ -11,7 +12,10 @@ RNG::Generator_32::Generator_32()
 RNG::Generator_64::Generator_64()
 	: gen()
 {
-	gen.seed(time(nullptr));
+	//unsigned long seed = time(nullptr);		// use for randomness based on time
+	unsigned long seed = 1416855012;			// use for reproducability of results
+	LOG_MESSAGE(StringBuilder() << "RNG seed 64 bits = " << seed);
+	gen.seed(seed);
 }
 
 uint32_t RNG::randomUint_32()

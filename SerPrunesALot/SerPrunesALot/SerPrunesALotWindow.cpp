@@ -165,7 +165,8 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	LOG_SIZE_OF(HashValue)
 	LOG_SIZE_OF(TableData)
 	LOG_SIZE_OF(TableEntry)
-	LOG_MESSAGE(StringBuilder() << "Transposition Table occupies " << sizeof(TableEntry) * TRANSPOSITION_TABLE_NUM_ENTRIES << " bytes (= " << sizeof(TableEntry) * std::pow(2.0, 20.0) / 1024.0 / 1024.0 << " MB)")
+	LOG_MESSAGE(StringBuilder() << "Transposition Table occupies " << sizeof(TableEntry) * TRANSPOSITION_TABLE_NUM_ENTRIES << " bytes (= " 
+																	<< sizeof(TableEntry) * TRANSPOSITION_TABLE_NUM_ENTRIES / 1024.0 / 1024.0 << " MB)")
 }
 
 SerPrunesALotWindow::~SerPrunesALotWindow()

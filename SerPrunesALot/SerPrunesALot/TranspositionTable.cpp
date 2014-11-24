@@ -31,7 +31,7 @@ const TableData& TranspositionTable::retrieve(uint64_t zobrist) const
 	// only check for errors if we can actually log them
 	if (index >= TRANSPOSITION_TABLE_NUM_ENTRIES)
 	{
-		LOG_ERROR("TranspositionTable::retrieve(): index larger than 2^20!")
+		LOG_ERROR(StringBuilder() << "TranspositionTable::retrieve(): index larger than " << TRANSPOSITION_TABLE_NUM_ENTRIES << "!")
 		return INVALID_TABLE_DATA;
 	}
 #endif

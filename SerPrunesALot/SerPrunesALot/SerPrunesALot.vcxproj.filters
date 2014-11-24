@@ -106,6 +106,9 @@
     <ClCompile Include="RNG.cpp">
       <Filter>Source Files\Utils\Math\RNG</Filter>
     </ClCompile>
+    <ClCompile Include="MoveOrdering.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="SerPrunesALot.ui">
@@ -172,6 +175,9 @@
     </ClInclude>
     <ClInclude Include="RNG.h">
       <Filter>Source Files\Utils\Math\RNG</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveOrdering.h">
+      <Filter>Source Files\AI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,3 +1,5 @@
 *.v12.suo
 *.sdf
 *.opensdf
+*.vsp
+*.psess
