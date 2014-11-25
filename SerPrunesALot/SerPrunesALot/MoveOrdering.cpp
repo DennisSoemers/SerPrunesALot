@@ -5,7 +5,8 @@
 
 void MoveOrdering::orderMoves(std::vector<Move>& moves, const Move& bestMove)
 {
-	for (size_t i = 0; i < moves.size(); ++i)
+	size_t numMoves = moves.size();
+	for (size_t i = 0; i < numMoves; ++i)
 	{
 		if (moves[i] == bestMove)		// found the best move, so swap it with the start of the vector
 		{

@@ -75,7 +75,8 @@ void GameState::applyMove(const Move& move)
 	// find the ''from'' location in our list of knight locations, and update it to the ''to'' location
 	std::vector<BoardLocation>& knightLocations = getPlayer(currentPlayer).getKnightLocations();
 
-	for (size_t i = 0; i < knightLocations.size(); ++i)
+	size_t numKnights = knightLocations.size();
+	for (size_t i = 0; i < numKnights; ++i)
 	{
 		BoardLocation& loc = knightLocations[i];
 
@@ -460,7 +461,8 @@ void GameState::undoMove(const Move& move)
 	// find the ''to'' location in our list of knight locations, and revert it to the ''from'' location
 	std::vector<BoardLocation>& knightLocations = getPlayer(currentPlayer).getKnightLocations();
 
-	for (size_t i = 0; i < knightLocations.size(); ++i)
+	size_t numKnights = knightLocations.size();
+	for (size_t i = 0; i < numKnights; ++i)
 	{
 		BoardLocation& loc = knightLocations[i];
 

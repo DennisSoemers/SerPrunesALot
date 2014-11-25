@@ -66,7 +66,8 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 #endif // GATHER_STATISTICS
 
 	int originalAlpha = alpha;
-	const TableData& tableData = transpositionTable.retrieve(gameState.getZobrist());
+	uint64_t zobrist = gameState.getZobrist();
+	const TableData& tableData = transpositionTable.retrieve(zobrist);
 	// true iff relevant data was retrieved from the Transposition Table
 	bool tableDataValid = tableData.isValid();
 
@@ -117,11 +118,12 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	}
 
 	int score = MathConstants::LOW_ENOUGH_INT;
-	Move bestMove = moves.at(0);
+	Move& bestMove = moves[0];
 
-	for (int i = 0; i < moves.size(); ++i)
+	int numMoves = moves.size();
+	for (int i = 0; i < numMoves; ++i)
 	{
-		Move m = moves[i];													// select move
+		const Move& m = moves[i];											// select move
 		gameState.applyMove(m);												// apply move
 		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
@@ -144,15 +146,15 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	// Store data in Transposition Table
 	if (score <= originalAlpha)		// found upper bound
 	{
-		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::UPPER_BOUND, depth);
+		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::UPPER_BOUND, depth);
 	}
 	else if (score >= beta)			// found lower bound
 	{
-		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::LOWER_BOUND, depth);
+		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::LOWER_BOUND, depth);
 	}
 	else							// found exact value
 	{
-		transpositionTable.storeData(bestMove, gameState.getZobrist(), score, EValue::Type::REAL, depth);
+		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::REAL, depth);
 	}
 
 	return score;
@@ -203,11 +205,11 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 	}
 
 	std::vector<Move> moves = gameState.generateAllMoves();
-	Move bestMove = moves.at(0);
+	Move& bestMove = moves[0];
 
 	for (int i = 0; i < moves.size(); ++i)
 	{
-		Move m = moves[i];													// select move
+		const Move& m = moves[i];											// select move
 		gameState.applyMove(m);												// apply move
 		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
