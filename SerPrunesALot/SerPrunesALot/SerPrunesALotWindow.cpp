@@ -1,4 +1,5 @@
 #include "SerPrunesALotWindow.h"
+#include "QActionGroup.h"
 #include "QDesktopWidget.h"
 #include "QGridLayout.h"
 #include "QIcon.h"
@@ -21,7 +22,8 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	currentGameState(),
 	selectedButton(nullptr),
 	ui(),
-	aiEngine(nullptr)
+	aiEngineBlack(nullptr),
+	aiEngineWhite(nullptr)
 {
 	// NOTE: hardcoding this means only board sizes up to 8x8 are supported
 	char* COORDS_NUMBERS[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
@@ -143,18 +145,65 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	QAction* highlightAllMovesButton = new QAction("Highlight All Moves", menuBar());
 	connect(highlightAllMovesButton, &QAction::triggered, this, &SerPrunesALotWindow::highlightAllMoves);
 
+	// Create menus to choose AI engines
+	QMenu* chooseEngineMenu = new QMenu("Choose AI Engine");
+	QMenu* blackEngineMenu = new QMenu("Black Player");
+	QMenu* whiteEngineMenu = new QMenu("White Player");
+
+	// Create the options
+	QActionGroup* blackEngines = new QActionGroup(blackEngineMenu);
+	QActionGroup* whiteEngines = new QActionGroup(whiteEngineMenu);
+
+	blackPlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", blackEngines);
+	blackPlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", blackEngines);
+	whitePlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", whiteEngines);
+	whitePlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", whiteEngines);
+
+	// Connect buttons to functions
+	connect(blackPlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
+	connect(blackPlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
+	connect(whitePlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
+	connect(whitePlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
+
+	// Add buttons to groups
+	blackPlayerBasicAlphaBeta->setActionGroup(blackEngines);
+	blackPlayerAlphaBetaTT->setActionGroup(blackEngines);
+	whitePlayerBasicAlphaBeta->setActionGroup(whiteEngines);
+	whitePlayerAlphaBetaTT->setActionGroup(whiteEngines);
+
+	// Make the buttons checkable
+	blackPlayerBasicAlphaBeta->setCheckable(true);
+	blackPlayerAlphaBetaTT->setCheckable(true);
+	whitePlayerBasicAlphaBeta->setCheckable(true);
+	whitePlayerAlphaBetaTT->setCheckable(true);
+
+	// Set the initially checked buttons
+	blackPlayerAlphaBetaTT->setChecked(true);
+	whitePlayerAlphaBetaTT->setChecked(true);
+
+	// Add buttons to submenus, and submenus to main menu
+	blackEngineMenu->addAction(blackPlayerBasicAlphaBeta);
+	blackEngineMenu->addAction(blackPlayerAlphaBetaTT);
+	whiteEngineMenu->addAction(whitePlayerBasicAlphaBeta);
+	whiteEngineMenu->addAction(whitePlayerAlphaBetaTT);
+
+	chooseEngineMenu->addMenu(blackEngineMenu);
+	chooseEngineMenu->addMenu(whiteEngineMenu);
+
 	// fill menuBar
 	menuBar()->addMenu(playerMenu);
 	menuBar()->addAction(undoLastMoveButton);
 	menuBar()->addAction(highlightAllMovesButton);
+	menuBar()->addMenu(chooseEngineMenu);
 	menuBar()->addAction(runAiButton);
 
 	// set up status bar
 	winDetectionLabel = new QLabel();
 	statusBar()->addPermanentWidget(winDetectionLabel);
 
-	// create AI Engine
-	aiEngine = new AlphaBetaTT();
+	// create AI Engines
+	aiEngineBlack = new AlphaBetaTT();
+	aiEngineWhite = new AlphaBetaTT();
 
 	// Initialize the board for new game
 	initBoard();
@@ -171,9 +220,16 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 
 SerPrunesALotWindow::~SerPrunesALotWindow()
 {
-	if (aiEngine)
+	if (aiEngineBlack)
 	{
-		delete aiEngine;
+		delete aiEngineBlack;
+		aiEngineBlack = nullptr;
+	}
+
+	if (aiEngineWhite)
+	{
+		delete aiEngineWhite;
+		aiEngineWhite = nullptr;
 	}
 }
 
@@ -182,8 +238,6 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 	BoardLocation clickedLoc = BoardLocation(button->column, button->row);
 	EPlayerColors::Type occupier = currentGameState.getOccupier(clickedLoc);
 	EPlayerColors::Type currentPlayer = currentGameState.getCurrentPlayer();
-
-	// TODO: check if currentPlayer is manually controlled and not an AI player
 
 	if (occupier == currentPlayer)		// clicked a button that we have a knight on
 	{
@@ -283,12 +337,14 @@ void SerPrunesALotWindow::highlightAllMoves()
 
 void SerPrunesALotWindow::playTurnAi()
 {
+	EPlayerColors::Type currentPlayer = currentGameState.getCurrentPlayer();
+
+	AiEngine* aiEngine = (currentPlayer == EPlayerColors::Type::BLACK_PLAYER) ? aiEngineBlack : aiEngineWhite;
+
 	if (!aiEngine)
 	{
 		return;
 	}
-
-	EPlayerColors::Type currentPlayer = currentGameState.getCurrentPlayer();
 
 	// Make sure we allow AI to control the color player that is allowed to play this turn
 	if (currentPlayer == EPlayerColors::Type::BLACK_PLAYER && !blackPlayerAiControl->isChecked())
@@ -390,6 +446,40 @@ void SerPrunesALotWindow::resizeEvent(QResizeEvent* event)
 	QMainWindow::resizeEvent(event);
 
 	updateGui();
+}
+
+void SerPrunesALotWindow::resetBlackAiEngine()
+{
+	if (aiEngineBlack)
+	{
+		delete aiEngineBlack;
+	}
+
+	if (blackPlayerBasicAlphaBeta->isChecked())
+	{
+		aiEngineBlack = new BasicAlphaBeta();
+	}
+	else if (blackPlayerAlphaBetaTT->isChecked())
+	{
+		aiEngineBlack = new AlphaBetaTT();
+	}
+}
+
+void SerPrunesALotWindow::resetWhiteAiEngine()
+{
+	if (aiEngineWhite)
+	{
+		delete aiEngineWhite;
+	}
+
+	if (whitePlayerBasicAlphaBeta->isChecked())
+	{
+		aiEngineWhite = new BasicAlphaBeta();
+	}
+	else if (whitePlayerAlphaBetaTT->isChecked())
+	{
+		aiEngineWhite = new AlphaBetaTT();
+	}
 }
 
 void SerPrunesALotWindow::undoLastMove()
