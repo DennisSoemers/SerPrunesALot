@@ -73,10 +73,7 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 #ifdef VERIFY_MOVE_LEGALITY
 	if (tableDataValid && !gameState.isMoveLegal(tableData.bestMove))
 	{
-		//LOG_ERROR("ERROR: table data contains invalid move in AlphaBetaTT::alphaBetaTT()")
-		//LOG_ERROR(StringBuilder() << "Captured = " << tableData.bestMove.captured)
-		//LOG_ERROR(StringBuilder() << "From = " << tableData.bestMove.from.x << ", " << tableData.bestMove.from.y)
-		//LOG_ERROR(StringBuilder() << "To = " << tableData.bestMove.to.x << ", " << tableData.bestMove.to.y)
+		LOG_ERROR("ERROR: table data contains invalid move in AlphaBetaTT::alphaBetaTT()")
 		tableDataValid = false;
 	}
 #endif
