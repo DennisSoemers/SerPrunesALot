@@ -1,5 +1,7 @@
 #pragma once
 
+#include <inttypes.h>
+
 /** 
  * A location on the board, indicated by an x and a y coordinate. 
  * Top-left corner of board has (x, y) = (0, 0).

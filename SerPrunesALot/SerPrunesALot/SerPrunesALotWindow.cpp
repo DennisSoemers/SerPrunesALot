@@ -11,6 +11,7 @@
 
 #include "AlphaBetaTT.h"
 #include "BasicAlphaBeta.h"
+#include "EnhancedEvalFunction.h"
 #include "Logger.h"
 #include "Move.h"
 #include "TranspositionTable.h"
@@ -156,36 +157,46 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 
 	blackPlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", blackEngines);
 	blackPlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", blackEngines);
+	blackPlayerEnhancedEvalFunction = new QAction("Alpha-Beta with Transposition Table and Enhanced Evaluation Function", blackEngines);
 	whitePlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", whiteEngines);
 	whitePlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", whiteEngines);
+	whitePlayerEnhancedEvalFunction = new QAction("Alpha-Beta with Transposition Table and Enhanced Evaluation Function", whiteEngines);
 
 	// Connect buttons to functions
 	connect(blackPlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
+	connect(blackPlayerEnhancedEvalFunction, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(whitePlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
+	connect(whitePlayerEnhancedEvalFunction, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 
 	// Add buttons to groups
 	blackPlayerBasicAlphaBeta->setActionGroup(blackEngines);
 	blackPlayerAlphaBetaTT->setActionGroup(blackEngines);
+	blackPlayerEnhancedEvalFunction->setActionGroup(blackEngines);
 	whitePlayerBasicAlphaBeta->setActionGroup(whiteEngines);
 	whitePlayerAlphaBetaTT->setActionGroup(whiteEngines);
+	whitePlayerEnhancedEvalFunction->setActionGroup(whiteEngines);
 
 	// Make the buttons checkable
 	blackPlayerBasicAlphaBeta->setCheckable(true);
 	blackPlayerAlphaBetaTT->setCheckable(true);
+	blackPlayerEnhancedEvalFunction->setCheckable(true);
 	whitePlayerBasicAlphaBeta->setCheckable(true);
 	whitePlayerAlphaBetaTT->setCheckable(true);
+	whitePlayerEnhancedEvalFunction->setCheckable(true);
 
 	// Set the initially checked buttons
-	blackPlayerAlphaBetaTT->setChecked(true);
-	whitePlayerAlphaBetaTT->setChecked(true);
+	blackPlayerEnhancedEvalFunction->setChecked(true);
+	whitePlayerEnhancedEvalFunction->setChecked(true);
 
 	// Add buttons to submenus, and submenus to main menu
 	blackEngineMenu->addAction(blackPlayerBasicAlphaBeta);
 	blackEngineMenu->addAction(blackPlayerAlphaBetaTT);
+	blackEngineMenu->addAction(blackPlayerEnhancedEvalFunction);
 	whiteEngineMenu->addAction(whitePlayerBasicAlphaBeta);
 	whiteEngineMenu->addAction(whitePlayerAlphaBetaTT);
+	whiteEngineMenu->addAction(whitePlayerEnhancedEvalFunction);
 
 	chooseEngineMenu->addMenu(blackEngineMenu);
 	chooseEngineMenu->addMenu(whiteEngineMenu);
@@ -202,8 +213,8 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	statusBar()->addPermanentWidget(winDetectionLabel);
 
 	// create AI Engines
-	aiEngineBlack = new AlphaBetaTT();
-	aiEngineWhite = new AlphaBetaTT();
+	aiEngineBlack = new EnhancedEvalFunction();
+	aiEngineWhite = new EnhancedEvalFunction();
 
 	// Initialize the board for new game
 	initBoard();
@@ -463,6 +474,10 @@ void SerPrunesALotWindow::resetBlackAiEngine()
 	{
 		aiEngineBlack = new AlphaBetaTT();
 	}
+	else if (blackPlayerEnhancedEvalFunction->isChecked())
+	{
+		aiEngineBlack = new EnhancedEvalFunction();
+	}
 }
 
 void SerPrunesALotWindow::resetWhiteAiEngine()
@@ -479,6 +494,10 @@ void SerPrunesALotWindow::resetWhiteAiEngine()
 	else if (whitePlayerAlphaBetaTT->isChecked())
 	{
 		aiEngineWhite = new AlphaBetaTT();
+	}
+	else if (whitePlayerEnhancedEvalFunction->isChecked())
+	{
+		aiEngineWhite = new EnhancedEvalFunction();
 	}
 }
 

@@ -1,3 +1,4 @@
+#include "Options.h"
 #include "RNG.h"
 #include "TranspositionTable.h"
 
@@ -6,7 +7,7 @@ bool TableData::isValid() const
 	return valueType != EValue::Type::INVALID_TYPE;
 }
 
-TranspositionTable::TranspositionTable()
+TranspositionTable::TranspositionTable() : numEntriesUsed(0), numReplacementsRequired(0)
 {
 	table = new TableEntry[TRANSPOSITION_TABLE_NUM_ENTRIES]();
 }
@@ -18,6 +19,8 @@ TranspositionTable::~TranspositionTable()
 
 void TranspositionTable::clear()
 {
+	numEntriesUsed = 0;
+	numReplacementsRequired = 0;
 	delete[] table;
 	table = new TableEntry[TRANSPOSITION_TABLE_NUM_ENTRIES]();
 }
@@ -99,6 +102,11 @@ void TranspositionTable::storeData(Move bestMove, uint64_t zobrist, int value, E
 		return;
 	}
 
+#ifdef GATHER_STATISTICS
+	// did not search existing game state to a larger depth, so hopefully we'll use a new entry
+	numEntriesUsed++;
+#endif // GATHER_STATISTICS
+
 	// now check if one of the slots in the entry is still empty, and if so, use that
 	if (!data1.isValid())
 	{
@@ -120,6 +128,12 @@ void TranspositionTable::storeData(Move bestMove, uint64_t zobrist, int value, E
 
 		return;
 	}
+
+#ifdef GATHER_STATISTICS
+	// did not manage to use a new entry, so we'll have to replace something
+	numEntriesUsed--;
+	numReplacementsRequired++;
+#endif // GATHER_STATISTICS
 
 	// both slots already filled, so replace whichever has the lowest depth
 	if (data1.depth < data2.depth)				// slot 1 searched less deep than slot 2, so replace that
@@ -152,4 +166,14 @@ void TranspositionTable::storeData(Move bestMove, uint64_t zobrist, int value, E
 		data1.value = value;
 		data1.valueType = valueType;
 	}
+}
+
+int TranspositionTable::getNumEntriesUsed() const
+{
+	return numEntriesUsed;
+}
+
+int TranspositionTable::getNumReplacementsRequired() const
+{
+	return numReplacementsRequired;
 }

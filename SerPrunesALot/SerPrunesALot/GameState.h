@@ -57,6 +57,10 @@ public:
 
 	/** Returns an EPlayerColors::Type indicating which player is the current player */
 	EPlayerColors::Type getCurrentPlayer() const;
+	/** Returns a const reference to the vector of the black player's knight locations */
+	const std::vector<BoardLocation>& getBlackKnights() const;
+	/** Returns the number of knights of the given color that could attack a given square (not taking into account whether it's occupied or not) */
+	int getNumAttackers(const BoardLocation& location, EPlayerColors::Type attackersColor) const;
 	/** Returns the number of knights that the black player has */
 	int getNumBlackKnights() const;
 	/** Returns the number of knights that the white player has */
@@ -67,6 +71,8 @@ public:
 	EPlayerColors::Type getOpponentColor(EPlayerColors::Type color) const;
 	/** Returns a reference to the player object corresponding to the given player color. Returns the white player if invalid color is given */
 	Player& getPlayer(EPlayerColors::Type playerColor);
+	/** Returns a const reference to the vector of the white player's knight locations */
+	const std::vector<BoardLocation>& getWhiteKnights() const;
 	/** Returns the color of the player that won the game. Returns EPlayerColors::Type::NOTHING if the game didn't end yet */
 	EPlayerColors::Type getWinner() const;
 	/** Returns the Zobrist Hash Value of the current game state */

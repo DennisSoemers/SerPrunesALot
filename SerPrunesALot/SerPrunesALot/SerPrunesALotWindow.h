@@ -90,10 +90,14 @@ private:
 	QAction* blackPlayerBasicAlphaBeta;
 	/** If toggled, Black Player will use Alpha Beta with Transposition Table */
 	QAction* blackPlayerAlphaBetaTT;
+	/** If toggled, Black Player will use the engine with Enhanced Evaluation Function */
+	QAction* blackPlayerEnhancedEvalFunction;
 	/** If toggled, White Player will use Basic Alpha Beta engine */
 	QAction* whitePlayerBasicAlphaBeta;
 	/** If toggled, White Player will use Alpha Beta with Transposition Table */
 	QAction* whitePlayerAlphaBetaTT;
+	/** If toggled, White Player will use the engine with Enhanced Evaluation Function */
+	QAction* whitePlayerEnhancedEvalFunction;
 
 	// Status Bar
 	/** The label in the status bar that will tell the user when an AI engine has detected a win or a loss */

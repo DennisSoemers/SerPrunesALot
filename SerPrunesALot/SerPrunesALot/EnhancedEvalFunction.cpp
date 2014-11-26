@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include "AlphaBetaTT.h"
+#include "EnhancedEvalFunction.h"
 #include "Logger.h"
 #include "MathConstants.h"
 #include "MoveOrdering.h"
@@ -10,17 +10,17 @@
 * The evaluation corresponding to a won game.
 * Should be a non-tight upper bound on values the evaluation function can return in non-terminal game states
 */
-#define WIN_EVALUATION 2000
+#define WIN_EVALUATION 2126
 
 /**
 * The depth to which the engine should search the game tree.
 */
 #define SEARCH_DEPTH 7
 
-AlphaBetaTT::AlphaBetaTT() : transpositionTable(), lastRootEvaluation(0), totalNodesVisited(0), totalTimeSpent(0.0), turnsPlayed(0)
+EnhancedEvalFunction::EnhancedEvalFunction() : transpositionTable(), lastRootEvaluation(0), totalNodesVisited(0), totalTimeSpent(0.0), turnsPlayed(0)
 {}
 
-Move AlphaBetaTT::chooseMove(GameState& gameState)
+Move EnhancedEvalFunction::chooseMove(GameState& gameState)
 {
 	transpositionTable.clear();	// clean up data from previous searches
 
@@ -44,6 +44,8 @@ Move AlphaBetaTT::chooseMove(GameState& gameState)
 	LOG_MESSAGE(StringBuilder() << "Search depth:					" << SEARCH_DEPTH)
 	LOG_MESSAGE(StringBuilder() << "Number of nodes visited:			" << nodesVisited)
 	LOG_MESSAGE(StringBuilder() << "Time spent:					" << timer.getElapsedTimeInMilliSec() << " ms")
+	LOG_MESSAGE(StringBuilder() << "% of Transposition Table entries used:		" << ((double)transpositionTable.getNumEntriesUsed() / (TRANSPOSITION_TABLE_NUM_ENTRIES * 2.0)))
+	LOG_MESSAGE(StringBuilder() << "% of Transposition Table entries replaced:	" << ((double)transpositionTable.getNumReplacementsRequired() / (TRANSPOSITION_TABLE_NUM_ENTRIES * 2.0)))
 	LOG_MESSAGE("")
 #endif // LOG_STATS_PER_TURN
 
@@ -59,7 +61,7 @@ Move AlphaBetaTT::chooseMove(GameState& gameState)
 #endif // GATHER_STATISTICS
 }
 
-int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int beta)
+int EnhancedEvalFunction::alphaBetaTT(GameState& gameState, int depth, int alpha, int beta)
 {
 #ifdef GATHER_STATISTICS
 	++nodesVisited;
@@ -120,52 +122,52 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	int score = MathConstants::LOW_ENOUGH_INT;
 	Move& bestMove = moves[0];
 
-	int numMoves = moves.size();
-	for (int i = 0; i < numMoves; ++i)
-	{
-		const Move& m = moves[i];											// select move
-		gameState.applyMove(m);												// apply move
-		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
-		gameState.undoMove(m);												// finished searching this subtree, so undo the move
+int numMoves = moves.size();
+for (int i = 0; i < numMoves; ++i)
+{
+	const Move& m = moves[i];											// select move
+	gameState.applyMove(m);												// apply move
+	int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
+	gameState.undoMove(m);												// finished searching this subtree, so undo the move
 
-		if (value > score)		// new best move found
-		{
-			score = value;
-			bestMove = m;
-		}
-		if (score > alpha)
-		{
-			alpha = score;
-		}
-		if (score >= beta)
-		{
-			break;
-		}
-	}
-
-	// Store data in Transposition Table
-	if (score <= originalAlpha)		// found upper bound
+	if (value > score)		// new best move found
 	{
-		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::UPPER_BOUND, depth);
+		score = value;
+		bestMove = m;
 	}
-	else if (score >= beta)			// found lower bound
+	if (score > alpha)
 	{
-		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::LOWER_BOUND, depth);
+		alpha = score;
 	}
-	else							// found exact value
+	if (score >= beta)
 	{
-		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::REAL, depth);
+		break;
 	}
-
-	return score;
 }
 
-int AlphaBetaTT::evaluate(const GameState& gameState) const
+// Store data in Transposition Table
+if (score <= originalAlpha)		// found upper bound
+{
+	transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::UPPER_BOUND, depth);
+}
+else if (score >= beta)			// found lower bound
+{
+	transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::LOWER_BOUND, depth);
+}
+else							// found exact value
+{
+	transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::REAL, depth);
+}
+
+return score;
+}
+
+int EnhancedEvalFunction::evaluate(const GameState& gameState) const
 {
 	return evaluate(gameState, gameState.getWinner());
 }
 
-int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner) const
+int EnhancedEvalFunction::evaluate(const GameState& gameState, EPlayerColors::Type winner) const
 {
 	EPlayerColors::Type evaluatingPlayer = gameState.getCurrentPlayer();
 
@@ -181,38 +183,79 @@ int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner
 	// at this point in code, compute evaluation from white's perspective
 	// at the end, before returning, negate if black is evaluating
 
-	// simple material difference, range = [-1600, 1600]
+	// simple material difference, weight = 100, range = [-1600, 1600]
 	int materialDifference = 100 * (gameState.getNumWhiteKnights() - gameState.getNumBlackKnights());
 
-	// progression = difference in furthest moved knight, range = [-350, 350]
+	// progression = difference in furthest moved knight, weight = 25, range = [-175, 175]
 	int progression = 0;
+
+	/**
+	 * controlled progression = difference in furthest square that we can also attack again more often than enemy can
+	 * weight = 50, range = [-350, 350]
+	 */
+	int controlledProgression = 0;
+
 	const std::vector<BoardLocation>& blackKnights = gameState.getBlackKnights();
 	const std::vector<BoardLocation>& whiteKnights = gameState.getWhiteKnights();
 
 	int blackProgression = 0;
 	int whiteProgression = 0;
+	int blackControlledProgression = 0;
+	int whiteControlledProgression = 0;
 
 	for (const BoardLocation& knight : blackKnights)
 	{
-		if (knight.y > blackProgression)						// black needs to move down -> increasing y
+		int distance = knight.y;
+
+		if (distance > blackControlledProgression)
 		{
-			blackProgression = knight.y;
+			if (distance > blackProgression)
+			{
+				blackProgression = distance;
+			}
+
+			int numAttackers = gameState.getNumAttackers(knight, EPlayerColors::Type::WHITE_PLAYER);
+
+			if (numAttackers == 0)	
+			{
+				blackControlledProgression = distance;		// black is completely safe here
+			}
+			else if (numAttackers <= gameState.getNumAttackers(knight, EPlayerColors::Type::BLACK_PLAYER))
+			{
+				blackControlledProgression = distance;		// black has enough back-up
+			}
 		}
 	}
 
 	for (const BoardLocation& knight : whiteKnights)
 	{
-		int knightProgression = BOARD_HEIGHT - 1 - knight.y;	// white needs to move up -> decreasing y
-		if (knightProgression > whiteProgression)
+		int distance = BOARD_HEIGHT - 1 - knight.y;
+		
+		if (distance > whiteControlledProgression)
 		{
-			whiteProgression = knightProgression;
+			if (distance > whiteProgression)
+			{
+				whiteProgression = distance;
+			}
+
+			int numAttackers = gameState.getNumAttackers(knight, EPlayerColors::Type::BLACK_PLAYER);
+
+			if (numAttackers == 0)
+			{
+				whiteControlledProgression = distance;		// white is completely safe here
+			}
+			else if (numAttackers <= gameState.getNumAttackers(knight, EPlayerColors::Type::WHITE_PLAYER))
+			{
+				whiteControlledProgression = distance;		// white has enough back-up
+			}
 		}
 	}
 
-	progression = 50 * (whiteProgression - blackProgression);
+	progression = 25 * (whiteProgression - blackProgression);
+	controlledProgression = 50 * (whiteProgression - blackProgression);
 
 	// compute final score
-	int score = materialDifference + progression;
+	int score = materialDifference + progression + controlledProgression;
 
 	// negate score in case we're black, since so far we assumed we're white
 	if (evaluatingPlayer == EPlayerColors::Type::BLACK_PLAYER)
@@ -223,7 +266,7 @@ int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner
 	return score;
 }
 
-Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
+Move EnhancedEvalFunction::startAlphaBetaTT(GameState& gameState, int depth)
 {
 	int score = MathConstants::LOW_ENOUGH_INT;
 	int alpha = MathConstants::LOW_ENOUGH_INT;
@@ -267,17 +310,17 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 	return bestMove;
 }
 
-int AlphaBetaTT::getRootEvaluation()
+int EnhancedEvalFunction::getRootEvaluation()
 {
 	return lastRootEvaluation;
 }
 
-int AlphaBetaTT::getWinEvaluation()
+int EnhancedEvalFunction::getWinEvaluation()
 {
 	return WIN_EVALUATION;
 }
 
-void AlphaBetaTT::logEndOfMatchStats()
+void EnhancedEvalFunction::logEndOfMatchStats()
 {
 #ifdef LOG_STATS_END_OF_MATCH
 	LOG_MESSAGE("Alpha Beta with TT engine END OF GAME stats:")

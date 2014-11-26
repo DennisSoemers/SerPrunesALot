@@ -107,6 +107,18 @@ public:
 	void clear();
 
 	/** 
+	 * Returns the number of entries that was used. 
+	 * Only returns a meaningful number if GATHER_STATISTICS is defined 
+	 */
+	int getNumEntriesUsed() const;
+
+	/** 
+	 * Returns the number of entries that were overwritten by data for a new game state. 
+	 * Only returns a meaningful number if GATHER_STATISTICS is defined
+	 */
+	int getNumReplacementsRequired() const;
+
+	/** 
 	 * Retrieves the data corresponding to the given zobrist hash value in the Transposition Table
 	 * Data is returned by const reference, and cannot be copied!
 	 *
@@ -121,6 +133,9 @@ public:
 
 private:
 	TableEntry* table;
+
+	int numEntriesUsed;
+	int numReplacementsRequired;
 
 	// don't want accidental copying of the Transposition Table
 	TranspositionTable(const TranspositionTable&);

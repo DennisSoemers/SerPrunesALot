@@ -39,4 +39,6 @@ public:
 
 	/** Logs statistics gathered by the AI engine at the end of the match */
 	virtual void logEndOfMatchStats() = 0;
+
+	virtual ~AiEngine(){}
 };

@@ -183,20 +183,12 @@ std::vector<Move> GameState::generateAllMoves() const
 		{
 			// add the moves for this knight location
 			// generate the 4 potential moves hardcoded because we like speed
-			BoardLocation vertLeftLeft(knightLoc.x - 2, knightLoc.y - 1);
-			BoardLocation vertRightRight(knightLoc.x + 2, knightLoc.y - 1);
 			BoardLocation vertVertLeft(knightLoc.x - 1, knightLoc.y - 2);
 			BoardLocation vertVertRight(knightLoc.x + 1, knightLoc.y - 2);
+			BoardLocation vertLeftLeft(knightLoc.x - 2, knightLoc.y - 1);
+			BoardLocation vertRightRight(knightLoc.x + 2, knightLoc.y - 1);
 
 			// test for each potential move if it's actually on the board and not occupied by our own knights
-			if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
-			}
-			if (vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
-			}
 			if (vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
@@ -204,6 +196,14 @@ std::vector<Move> GameState::generateAllMoves() const
 			if (vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
+			}
+			if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
+			}
+			if (vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
+			{
+				moves.push_back(Move(knightLoc, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
 			}
 		}
 	}
@@ -246,9 +246,74 @@ std::vector<Move> GameState::generateMoves(BoardLocation from) const
 	return moves;
 }
 
+const std::vector<BoardLocation>& GameState::getBlackKnights() const
+{
+	return blackPlayer.getKnightLocations();
+}
+
 EPlayerColors::Type GameState::getCurrentPlayer() const
 {
 	return currentPlayer;
+}
+
+int GameState::getNumAttackers(const BoardLocation& location, EPlayerColors::Type attackersColor) const
+{
+	int numAttackers = 0;
+
+	if (attackersColor == EPlayerColors::Type::BLACK_PLAYER)
+	{
+		// generate the 4 potential attacker locations hardcoded because we like speed
+		BoardLocation vertVertLeft(location.x - 1, location.y - 2);
+		BoardLocation vertVertRight(location.x + 1, location.y - 2);
+		BoardLocation vertLeftLeft(location.x - 2, location.y - 1);
+		BoardLocation vertRightRight(location.x + 2, location.y - 1);
+
+		// test for each potential attacker location if it's actually on the board and occupied by an attacker
+		if (vertVertLeft.isValid() && getOccupier(vertVertLeft) == attackersColor)
+		{
+			++numAttackers;
+		}
+		if (vertVertRight.isValid() && getOccupier(vertVertRight) == attackersColor)
+		{
+			++numAttackers;
+		}
+		if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) == attackersColor)
+		{
+			++numAttackers;
+		}
+		if (vertRightRight.isValid() && getOccupier(vertRightRight) == attackersColor)
+		{
+			++numAttackers;
+		}
+	}
+	else 
+	{
+		// generate the 4 potential attacker locations hardcoded because we like speed
+		BoardLocation vertLeftLeft(location.x - 2, location.y + 1);
+		BoardLocation vertRightRight(location.x + 2, location.y + 1);
+		BoardLocation vertVertLeft(location.x - 1, location.y + 2);
+		BoardLocation vertVertRight(location.x + 1, location.y + 2);
+
+		// test for each potential attacker location if it's actually on the board and occupied by an attacker
+		if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) == attackersColor)
+		{
+			++numAttackers;
+		}
+		if (vertRightRight.isValid() && getOccupier(vertRightRight) == attackersColor)
+		{
+			++numAttackers;
+		}
+		if (vertVertLeft.isValid() && getOccupier(vertVertLeft) == attackersColor)
+		{
+			++numAttackers;
+		}
+		if (vertVertRight.isValid() && getOccupier(vertVertRight) == attackersColor)
+		{
+			++numAttackers;
+		}
+	}
+
+	return numAttackers;
 }
 
 EPlayerColors::Type GameState::getOccupier(BoardLocation location) const
@@ -293,6 +358,11 @@ Player& GameState::getPlayer(EPlayerColors::Type playerColor)
 	{
 		return whitePlayer;
 	}
+}
+
+const std::vector<BoardLocation>& GameState::getWhiteKnights() const
+{
+	return whitePlayer.getKnightLocations();
 }
 
 EPlayerColors::Type GameState::getWinner() const
