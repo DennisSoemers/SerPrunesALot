@@ -94,6 +94,8 @@ private:
 	QAction* blackPlayerEnhancedEvalFunction;
 	/** If toggled, Black Player will use the Iterative Deepening engine */
 	QAction* blackPlayerIterativeDeepening;
+	/** If toggled, Black Player will use the Aspiration Search engine */
+	QAction* blackPlayerAspirationSearch;
 
 	/** If toggled, White Player will use Basic Alpha Beta engine */
 	QAction* whitePlayerBasicAlphaBeta;
@@ -103,6 +105,8 @@ private:
 	QAction* whitePlayerEnhancedEvalFunction;
 	/** If toggled, White Player will use the Iterative Deepening engine */
 	QAction* whitePlayerIterativeDeepening;
+	/** If toggled, White Player will use the Aspiration Search engine */
+	QAction* whitePlayerAspirationSearch;
 
 	// Status Bar
 	/** The label in the status bar that will tell the user when an AI engine has detected a win or a loss */

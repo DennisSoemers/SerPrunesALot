@@ -10,6 +10,7 @@
 #include "Options.h"
 
 #include "AlphaBetaTT.h"
+#include "AspirationSearch.h"
 #include "BasicAlphaBeta.h"
 #include "EnhancedEvalFunction.h"
 #include "IterativeDeepening.h"
@@ -160,59 +161,69 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	blackPlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", blackEngines);
 	blackPlayerEnhancedEvalFunction = new QAction("Alpha-Beta with Transposition Table and Enhanced Evaluation Function", blackEngines);
 	blackPlayerIterativeDeepening = new QAction("Iterative Deepening", blackEngines);
+	blackPlayerAspirationSearch = new QAction("Aspiration Search", blackEngines);
 
 	whitePlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", whiteEngines);
 	whitePlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", whiteEngines);
 	whitePlayerEnhancedEvalFunction = new QAction("Alpha-Beta with Transposition Table and Enhanced Evaluation Function", whiteEngines);
 	whitePlayerIterativeDeepening = new QAction("Iterative Deepening", whiteEngines);
+	whitePlayerAspirationSearch = new QAction("Aspiration Search", whiteEngines);
 
 	// Connect buttons to functions
 	connect(blackPlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerEnhancedEvalFunction, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerIterativeDeepening, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
+	connect(blackPlayerAspirationSearch, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 
 	connect(whitePlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerEnhancedEvalFunction, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerIterativeDeepening, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
+	connect(whitePlayerAspirationSearch, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 
 	// Add buttons to groups
 	blackPlayerBasicAlphaBeta->setActionGroup(blackEngines);
 	blackPlayerAlphaBetaTT->setActionGroup(blackEngines);
 	blackPlayerEnhancedEvalFunction->setActionGroup(blackEngines);
 	blackPlayerIterativeDeepening->setActionGroup(blackEngines);
+	blackPlayerAspirationSearch->setActionGroup(blackEngines);
 
 	whitePlayerBasicAlphaBeta->setActionGroup(whiteEngines);
 	whitePlayerAlphaBetaTT->setActionGroup(whiteEngines);
 	whitePlayerEnhancedEvalFunction->setActionGroup(whiteEngines);
 	whitePlayerIterativeDeepening->setActionGroup(whiteEngines);
+	whitePlayerAspirationSearch->setActionGroup(whiteEngines);
 
 	// Make the buttons checkable
 	blackPlayerBasicAlphaBeta->setCheckable(true);
 	blackPlayerAlphaBetaTT->setCheckable(true);
 	blackPlayerEnhancedEvalFunction->setCheckable(true);
 	blackPlayerIterativeDeepening->setCheckable(true);
+	blackPlayerAspirationSearch->setCheckable(true);
 
 	whitePlayerBasicAlphaBeta->setCheckable(true);
 	whitePlayerAlphaBetaTT->setCheckable(true);
 	whitePlayerEnhancedEvalFunction->setCheckable(true);
 	whitePlayerIterativeDeepening->setCheckable(true);
+	whitePlayerAspirationSearch->setCheckable(true);
 
 	// Set the initially checked buttons
-	blackPlayerIterativeDeepening->setChecked(true);
-	whitePlayerIterativeDeepening->setChecked(true);
+	blackPlayerAspirationSearch->setChecked(true);
+	whitePlayerAspirationSearch->setChecked(true);
 
 	// Add buttons to submenus, and submenus to main menu
 	blackEngineMenu->addAction(blackPlayerBasicAlphaBeta);
 	blackEngineMenu->addAction(blackPlayerAlphaBetaTT);
 	blackEngineMenu->addAction(blackPlayerEnhancedEvalFunction);
 	blackEngineMenu->addAction(blackPlayerIterativeDeepening);
+	blackEngineMenu->addAction(blackPlayerAspirationSearch);
 
 	whiteEngineMenu->addAction(whitePlayerBasicAlphaBeta);
 	whiteEngineMenu->addAction(whitePlayerAlphaBetaTT);
 	whiteEngineMenu->addAction(whitePlayerEnhancedEvalFunction);
 	whiteEngineMenu->addAction(whitePlayerIterativeDeepening);
+	whiteEngineMenu->addAction(whitePlayerAspirationSearch);
 
 	chooseEngineMenu->addMenu(blackEngineMenu);
 	chooseEngineMenu->addMenu(whiteEngineMenu);
@@ -229,8 +240,8 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	statusBar()->addPermanentWidget(winDetectionLabel);
 
 	// create AI Engines
-	aiEngineBlack = new IterativeDeepening();
-	aiEngineWhite = new IterativeDeepening();
+	aiEngineBlack = new AspirationSearch();
+	aiEngineWhite = new AspirationSearch();
 
 	// Initialize the board for new game
 	initBoard();
@@ -434,12 +445,19 @@ void SerPrunesALotWindow::playTurnAi()
 	}
 
 	IterativeDeepening* itDeepeningEngine = dynamic_cast<IterativeDeepening*>(aiEngine);
+	AspirationSearch* aspirationSearchEngine = dynamic_cast<AspirationSearch*>(aiEngine);
 
 	if (itDeepeningEngine)	// also write to GUI what the last search depth was of Iterative Deepening engine
 	{
 		std::string currentText = winDetectionLabel->text().toStdString();
 		winDetectionLabel->setText(QString::fromStdString(StringBuilder() << currentText << " (Iterative Deepening Search Depth = " << itDeepeningEngine->getLastSearchDepth() 
 																						<< ", Seconds Searched = " << itDeepeningEngine->getSecondsSearched() << ")")			);
+	}
+	else if(aspirationSearchEngine)		// also write to GUI what the last search depth was of Aspiration Search engine
+	{
+		std::string currentText = winDetectionLabel->text().toStdString();
+		winDetectionLabel->setText(QString::fromStdString(StringBuilder() << currentText << " (Aspiration Search Depth = " << aspirationSearchEngine->getLastSearchDepth()
+			<< ", Seconds Searched = " << aspirationSearchEngine->getSecondsSearched() << ")"));
 	}
 
 	// revert all currently highlighted buttons back to their normal color
@@ -508,6 +526,10 @@ void SerPrunesALotWindow::resetBlackAiEngine()
 	{
 		aiEngineBlack = new IterativeDeepening();
 	}
+	else if(blackPlayerAspirationSearch->isChecked())
+	{
+		aiEngineBlack = new AspirationSearch();
+	}
 }
 
 void SerPrunesALotWindow::resetWhiteAiEngine()
@@ -532,6 +554,10 @@ void SerPrunesALotWindow::resetWhiteAiEngine()
 	else if (whitePlayerIterativeDeepening->isChecked())
 	{
 		aiEngineWhite = new IterativeDeepening();
+	}
+	else if(whitePlayerAspirationSearch->isChecked())
+	{
+		aiEngineWhite = new AspirationSearch();
 	}
 }
 
