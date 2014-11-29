@@ -21,4 +21,4 @@
 #endif // GATHER_STATISTICS
 
 // the desired number of entries in a Transposition Table
-static const uint64_t TRANSPOSITION_TABLE_NUM_ENTRIES = (uint64_t)(std::pow(2, 20));
+static const uint64_t TRANSPOSITION_TABLE_NUM_ENTRIES = (uint64_t)(std::pow(2, 21));

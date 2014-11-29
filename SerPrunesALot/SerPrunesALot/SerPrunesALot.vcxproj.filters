@@ -112,6 +112,9 @@
     <ClCompile Include="EnhancedEvalFunction.cpp">
       <Filter>Source Files\AI</Filter>
     </ClCompile>
+    <ClCompile Include="IterativeDeepening.cpp">
+      <Filter>Source Files\AI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="SerPrunesALot.ui">
@@ -183,6 +186,9 @@
       <Filter>Source Files\AI</Filter>
     </ClInclude>
     <ClInclude Include="EnhancedEvalFunction.h">
+      <Filter>Source Files\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="IterativeDeepening.h">
       <Filter>Source Files\AI</Filter>
     </ClInclude>
   </ItemGroup>

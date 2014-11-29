@@ -10,7 +10,7 @@
 * The evaluation corresponding to a won game.
 * Should be a non-tight upper bound on values the evaluation function can return in non-terminal game states
 */
-#define WIN_EVALUATION 2126
+#define WIN_EVALUATION 2000
 
 /**
 * The depth to which the engine should search the game tree.
@@ -34,11 +34,11 @@ Move EnhancedEvalFunction::chooseMove(GameState& gameState)
 #ifdef LOG_STATS_PER_TURN
 	if (gameState.getCurrentPlayer() == EPlayerColors::Type::BLACK_PLAYER)
 	{
-		LOG_MESSAGE(StringBuilder() << "Alpha Beta with TT engine searching move for Black Player")
+		LOG_MESSAGE(StringBuilder() << "Enhanced Eval Function engine searching move for Black Player")
 	}
 	else
 	{
-		LOG_MESSAGE(StringBuilder() << "Alpha Beta with TT engine searching move for White Player")
+		LOG_MESSAGE(StringBuilder() << "Enhanced Eval Function engine searching move for White Player")
 	}
 
 	LOG_MESSAGE(StringBuilder() << "Search depth:					" << SEARCH_DEPTH)
@@ -122,44 +122,45 @@ int EnhancedEvalFunction::alphaBetaTT(GameState& gameState, int depth, int alpha
 	int score = MathConstants::LOW_ENOUGH_INT;
 	Move& bestMove = moves[0];
 
-int numMoves = moves.size();
-for (int i = 0; i < numMoves; ++i)
-{
-	const Move& m = moves[i];											// select move
-	gameState.applyMove(m);												// apply move
-	int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
-	gameState.undoMove(m);												// finished searching this subtree, so undo the move
-
-	if (value > score)		// new best move found
+	int numMoves = moves.size();
+	for (int i = 0; i < numMoves; ++i)
 	{
-		score = value;
-		bestMove = m;
-	}
-	if (score > alpha)
-	{
-		alpha = score;
-	}
-	if (score >= beta)
-	{
-		break;
-	}
-}
+		const Move& m = moves[i];											// select move
+		gameState.applyMove(m);												// apply move
+		transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
+		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
+		gameState.undoMove(m);												// finished searching this subtree, so undo the move
 
-// Store data in Transposition Table
-if (score <= originalAlpha)		// found upper bound
-{
-	transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::UPPER_BOUND, depth);
-}
-else if (score >= beta)			// found lower bound
-{
-	transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::LOWER_BOUND, depth);
-}
-else							// found exact value
-{
-	transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::REAL, depth);
-}
+		if (value > score)		// new best move found
+		{
+			score = value;
+			bestMove = m;
+		}
+		if (score > alpha)
+		{
+			alpha = score;
+		}
+		if (score >= beta)
+		{
+			break;
+		}
+	}
 
-return score;
+	// Store data in Transposition Table
+	if (score <= originalAlpha)		// found upper bound
+	{
+		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::UPPER_BOUND, depth);
+	}
+	else if (score >= beta)			// found lower bound
+	{
+		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::LOWER_BOUND, depth);
+	}
+	else							// found exact value
+	{
+		transpositionTable.storeData(bestMove, zobrist, score, EValue::Type::REAL, depth);
+	}
+
+	return score;
 }
 
 int EnhancedEvalFunction::evaluate(const GameState& gameState) const
@@ -186,37 +187,43 @@ int EnhancedEvalFunction::evaluate(const GameState& gameState, EPlayerColors::Ty
 	// simple material difference, weight = 100, range = [-1600, 1600]
 	int materialDifference = 100 * (gameState.getNumWhiteKnights() - gameState.getNumBlackKnights());
 
-	// progression = difference in furthest moved knight, weight = 25, range = [-175, 175]
+	// progression = difference in furthest moved knight, weight = 35, range = [-210, 210] (because max advantage = 6)
 	int progression = 0;
 
 	/**
 	 * controlled progression = difference in furthest square that we can also attack again more often than enemy can
-	 * weight = 50, range = [-350, 350]
+	 * weight = 1, range = [-4, 4] (because max advantage = 4)
 	 */
 	int controlledProgression = 0;
 
 	const std::vector<BoardLocation>& blackKnights = gameState.getBlackKnights();
 	const std::vector<BoardLocation>& whiteKnights = gameState.getWhiteKnights();
 
+	// give every player default controlled progression of 2, so we only reward controlled movement further than 2
 	int blackProgression = 0;
 	int whiteProgression = 0;
-	int blackControlledProgression = 0;
-	int whiteControlledProgression = 0;
+	int blackControlledProgression = 2;
+	int whiteControlledProgression = 2;
 
 	for (const BoardLocation& knight : blackKnights)
 	{
 		int distance = knight.y;
 
+		if (distance > blackProgression)
+		{
+			blackProgression = distance;
+		}
+
 		if (distance > blackControlledProgression)
 		{
-			if (distance > blackProgression)
-			{
-				blackProgression = distance;
-			}
-
 			int numAttackers = gameState.getNumAttackers(knight, EPlayerColors::Type::WHITE_PLAYER);
 
-			if (numAttackers == 0)	
+			if (evaluatingPlayer == EPlayerColors::Type::BLACK_PLAYER)	// black player is to move, so a single white attacker isn't enough
+			{
+				--numAttackers;
+			}
+
+			if (numAttackers <= 0)	
 			{
 				blackControlledProgression = distance;		// black is completely safe here
 			}
@@ -230,17 +237,22 @@ int EnhancedEvalFunction::evaluate(const GameState& gameState, EPlayerColors::Ty
 	for (const BoardLocation& knight : whiteKnights)
 	{
 		int distance = BOARD_HEIGHT - 1 - knight.y;
+
+		if (distance > whiteProgression)
+		{
+			whiteProgression = distance;
+		}
 		
 		if (distance > whiteControlledProgression)
 		{
-			if (distance > whiteProgression)
-			{
-				whiteProgression = distance;
-			}
-
 			int numAttackers = gameState.getNumAttackers(knight, EPlayerColors::Type::BLACK_PLAYER);
 
-			if (numAttackers == 0)
+			if (evaluatingPlayer == EPlayerColors::Type::WHITE_PLAYER)	// white player is to move, so a single black attacker isn't enough
+			{
+				--numAttackers;
+			}
+
+			if (numAttackers <= 0)
 			{
 				whiteControlledProgression = distance;		// white is completely safe here
 			}
@@ -251,8 +263,8 @@ int EnhancedEvalFunction::evaluate(const GameState& gameState, EPlayerColors::Ty
 		}
 	}
 
-	progression = 25 * (whiteProgression - blackProgression);
-	controlledProgression = 50 * (whiteProgression - blackProgression);
+	progression = 35 * (whiteProgression - blackProgression);
+	controlledProgression = 1 * (whiteControlledProgression - blackControlledProgression);
 
 	// compute final score
 	int score = materialDifference + progression + controlledProgression;
@@ -287,6 +299,7 @@ Move EnhancedEvalFunction::startAlphaBetaTT(GameState& gameState, int depth)
 	{
 		const Move& m = moves[i];											// select move
 		gameState.applyMove(m);												// apply move
+		transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
 		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
 
@@ -323,7 +336,7 @@ int EnhancedEvalFunction::getWinEvaluation()
 void EnhancedEvalFunction::logEndOfMatchStats()
 {
 #ifdef LOG_STATS_END_OF_MATCH
-	LOG_MESSAGE("Alpha Beta with TT engine END OF GAME stats:")
+	LOG_MESSAGE("Enhanced Eval Function engine END OF GAME stats:")
 	LOG_MESSAGE(StringBuilder() << "Search depth:					" << SEARCH_DEPTH)
 	LOG_MESSAGE(StringBuilder() << "Number of nodes visited:			" << totalNodesVisited)
 	LOG_MESSAGE(StringBuilder() << "Time spent:					" << totalTimeSpent << " ms")

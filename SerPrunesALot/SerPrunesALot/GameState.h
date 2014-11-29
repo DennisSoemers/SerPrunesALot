@@ -7,6 +7,7 @@
 #include "GameConstants.h"
 #include "Move.h"
 #include "Player.h"
+#include "TranspositionTable.h"
 
 /**
  * Defines a state of the game

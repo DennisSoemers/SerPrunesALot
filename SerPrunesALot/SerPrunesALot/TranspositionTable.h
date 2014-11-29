@@ -9,7 +9,7 @@
 //#define VERIFY_MOVE_LEGALITY
 
 /**
- * A 64-bit hash value, with 20 bits as primary hash code and 44 bits as secondary hash code
+ * A 64-bit hash value, with 21 bits as primary hash code and 43 bits as secondary hash code
  *
  * The primary and secondary hash codes can be retrieved individually from the hashCodes field,
  * and the entire hash value (consisting of both codes) can be retrieved as the value field.
@@ -19,8 +19,8 @@ union HashValue
 	// Allows individual access to primary and secondary codes
 	struct HashCodes
 	{
-		uint64_t primary : 20;
-		uint64_t secondary : 44;
+		uint64_t primary : 21;
+		uint64_t secondary : 43;
 	} hashCodes;
 
 	// the entire 64-bits value
@@ -61,8 +61,8 @@ public:
 	Move bestMove;
 	HashValue hashValue;
 	int value;
-	EValue::Type valueType;
 	uint8_t depth;
+	EValue::Type valueType;
 
 	/** 
 	 * Returns true iff the data is valid. 
@@ -92,10 +92,10 @@ struct TableEntry
 /**
  * A transposition table
  *
- * Uses 64-bit hash values, with the first 20 bits as primary hash code
- * and the remaining 44 bits as secondary hash code.
+ * Uses 64-bit hash values, with the first 21 bits as primary hash code
+ * and the remaining 43 bits as secondary hash code.
  *
- * The table has space for 2^20 entries.
+ * The table has space for 2^21 entries.
  */
 class TranspositionTable
 {
@@ -117,6 +117,14 @@ public:
 	 * Only returns a meaningful number if GATHER_STATISTICS is defined
 	 */
 	int getNumReplacementsRequired() const;
+
+	/** 
+	 * Prefetches the entry corresponding to the given zobrist value and loads it into L2 cache 
+	 * See Section 6.3.2 of: http://www.akkadia.org/drepper/cpumemory.pdf
+	 *
+	 * Profiling indicated a consistent 6% performance increase using this function
+	 */
+	void prefetch(uint64_t zobrist) const;
 
 	/** 
 	 * Retrieves the data corresponding to the given zobrist hash value in the Transposition Table

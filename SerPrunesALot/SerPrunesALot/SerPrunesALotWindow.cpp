@@ -12,6 +12,7 @@
 #include "AlphaBetaTT.h"
 #include "BasicAlphaBeta.h"
 #include "EnhancedEvalFunction.h"
+#include "IterativeDeepening.h"
 #include "Logger.h"
 #include "Move.h"
 #include "TranspositionTable.h"
@@ -158,45 +159,60 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	blackPlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", blackEngines);
 	blackPlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", blackEngines);
 	blackPlayerEnhancedEvalFunction = new QAction("Alpha-Beta with Transposition Table and Enhanced Evaluation Function", blackEngines);
+	blackPlayerIterativeDeepening = new QAction("Iterative Deepening", blackEngines);
+
 	whitePlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", whiteEngines);
 	whitePlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", whiteEngines);
 	whitePlayerEnhancedEvalFunction = new QAction("Alpha-Beta with Transposition Table and Enhanced Evaluation Function", whiteEngines);
+	whitePlayerIterativeDeepening = new QAction("Iterative Deepening", whiteEngines);
 
 	// Connect buttons to functions
 	connect(blackPlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerEnhancedEvalFunction, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
+	connect(blackPlayerIterativeDeepening, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
+
 	connect(whitePlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerEnhancedEvalFunction, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
+	connect(whitePlayerIterativeDeepening, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 
 	// Add buttons to groups
 	blackPlayerBasicAlphaBeta->setActionGroup(blackEngines);
 	blackPlayerAlphaBetaTT->setActionGroup(blackEngines);
 	blackPlayerEnhancedEvalFunction->setActionGroup(blackEngines);
+	blackPlayerIterativeDeepening->setActionGroup(blackEngines);
+
 	whitePlayerBasicAlphaBeta->setActionGroup(whiteEngines);
 	whitePlayerAlphaBetaTT->setActionGroup(whiteEngines);
 	whitePlayerEnhancedEvalFunction->setActionGroup(whiteEngines);
+	whitePlayerIterativeDeepening->setActionGroup(whiteEngines);
 
 	// Make the buttons checkable
 	blackPlayerBasicAlphaBeta->setCheckable(true);
 	blackPlayerAlphaBetaTT->setCheckable(true);
 	blackPlayerEnhancedEvalFunction->setCheckable(true);
+	blackPlayerIterativeDeepening->setCheckable(true);
+
 	whitePlayerBasicAlphaBeta->setCheckable(true);
 	whitePlayerAlphaBetaTT->setCheckable(true);
 	whitePlayerEnhancedEvalFunction->setCheckable(true);
+	whitePlayerIterativeDeepening->setCheckable(true);
 
 	// Set the initially checked buttons
-	blackPlayerEnhancedEvalFunction->setChecked(true);
-	whitePlayerEnhancedEvalFunction->setChecked(true);
+	blackPlayerIterativeDeepening->setChecked(true);
+	whitePlayerIterativeDeepening->setChecked(true);
 
 	// Add buttons to submenus, and submenus to main menu
 	blackEngineMenu->addAction(blackPlayerBasicAlphaBeta);
 	blackEngineMenu->addAction(blackPlayerAlphaBetaTT);
 	blackEngineMenu->addAction(blackPlayerEnhancedEvalFunction);
+	blackEngineMenu->addAction(blackPlayerIterativeDeepening);
+
 	whiteEngineMenu->addAction(whitePlayerBasicAlphaBeta);
 	whiteEngineMenu->addAction(whitePlayerAlphaBetaTT);
 	whiteEngineMenu->addAction(whitePlayerEnhancedEvalFunction);
+	whiteEngineMenu->addAction(whitePlayerIterativeDeepening);
 
 	chooseEngineMenu->addMenu(blackEngineMenu);
 	chooseEngineMenu->addMenu(whiteEngineMenu);
@@ -213,8 +229,8 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	statusBar()->addPermanentWidget(winDetectionLabel);
 
 	// create AI Engines
-	aiEngineBlack = new EnhancedEvalFunction();
-	aiEngineWhite = new EnhancedEvalFunction();
+	aiEngineBlack = new IterativeDeepening();
+	aiEngineWhite = new IterativeDeepening();
 
 	// Initialize the board for new game
 	initBoard();
@@ -227,6 +243,7 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	LOG_SIZE_OF(TableEntry)
 	LOG_MESSAGE(StringBuilder() << "Transposition Table occupies " << sizeof(TableEntry) * TRANSPOSITION_TABLE_NUM_ENTRIES << " bytes (= " 
 																	<< sizeof(TableEntry) * TRANSPOSITION_TABLE_NUM_ENTRIES / 1024.0 / 1024.0 << " MB)")
+	LOG_MESSAGE("")
 }
 
 SerPrunesALotWindow::~SerPrunesALotWindow()
@@ -390,7 +407,7 @@ void SerPrunesALotWindow::playTurnAi()
 		}
 		else
 		{
-			winDetectionLabel->setText("(Future) Win detected for Black Player by White Player!");
+			winDetectionLabel->setText("(Future) Win detected for Black Player by Black Player!");
 		}
 	}
 	else if (rootEvaluation == -aiEngine->getWinEvaluation())		// detected (future) loss
@@ -414,6 +431,15 @@ void SerPrunesALotWindow::playTurnAi()
 		{
 			winDetectionLabel->setText(QString::fromStdString(StringBuilder() << "Black player evaluates this match: " << rootEvaluation));
 		}
+	}
+
+	IterativeDeepening* itDeepeningEngine = dynamic_cast<IterativeDeepening*>(aiEngine);
+
+	if (itDeepeningEngine)	// also write to GUI what the last search depth was of Iterative Deepening engine
+	{
+		std::string currentText = winDetectionLabel->text().toStdString();
+		winDetectionLabel->setText(QString::fromStdString(StringBuilder() << currentText << " (Iterative Deepening Search Depth = " << itDeepeningEngine->getLastSearchDepth() 
+																						<< ", Seconds Searched = " << itDeepeningEngine->getSecondsSearched() << ")")			);
 	}
 
 	// revert all currently highlighted buttons back to their normal color
@@ -478,6 +504,10 @@ void SerPrunesALotWindow::resetBlackAiEngine()
 	{
 		aiEngineBlack = new EnhancedEvalFunction();
 	}
+	else if (blackPlayerIterativeDeepening->isChecked())
+	{
+		aiEngineBlack = new IterativeDeepening();
+	}
 }
 
 void SerPrunesALotWindow::resetWhiteAiEngine()
@@ -498,6 +528,10 @@ void SerPrunesALotWindow::resetWhiteAiEngine()
 	else if (whitePlayerEnhancedEvalFunction->isChecked())
 	{
 		aiEngineWhite = new EnhancedEvalFunction();
+	}
+	else if (whitePlayerIterativeDeepening->isChecked())
+	{
+		aiEngineWhite = new IterativeDeepening();
 	}
 }
 

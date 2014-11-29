@@ -92,12 +92,17 @@ private:
 	QAction* blackPlayerAlphaBetaTT;
 	/** If toggled, Black Player will use the engine with Enhanced Evaluation Function */
 	QAction* blackPlayerEnhancedEvalFunction;
+	/** If toggled, Black Player will use the Iterative Deepening engine */
+	QAction* blackPlayerIterativeDeepening;
+
 	/** If toggled, White Player will use Basic Alpha Beta engine */
 	QAction* whitePlayerBasicAlphaBeta;
 	/** If toggled, White Player will use Alpha Beta with Transposition Table */
 	QAction* whitePlayerAlphaBetaTT;
 	/** If toggled, White Player will use the engine with Enhanced Evaluation Function */
 	QAction* whitePlayerEnhancedEvalFunction;
+	/** If toggled, White Player will use the Iterative Deepening engine */
+	QAction* whitePlayerIterativeDeepening;
 
 	// Status Bar
 	/** The label in the status bar that will tell the user when an AI engine has detected a win or a loss */

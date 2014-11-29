@@ -1,26 +1,29 @@
+#define NOMINMAX
+
 #include <algorithm>
 
-#include "AlphaBetaTT.h"
+#include "IterativeDeepening.h"
 #include "Logger.h"
 #include "MathConstants.h"
 #include "MoveOrdering.h"
-#include "Timer.hpp"
 
 /**
 * The evaluation corresponding to a won game.
 * Should be a non-tight upper bound on values the evaluation function can return in non-terminal game states
 */
-#define WIN_EVALUATION 2000
+#define WIN_EVALUATION 1900
 
-/**
-* The depth to which the engine should search the game tree.
-*/
-#define SEARCH_DEPTH 7
-
-AlphaBetaTT::AlphaBetaTT() : transpositionTable(), lastRootEvaluation(0), totalNodesVisited(0), totalTimeSpent(0.0), turnsPlayed(0)
+IterativeDeepening::IterativeDeepening() 
+	: transpositionTable(),
+	clock(), 
+	lastRootEvaluation(0), 
+	totalNodesVisited(0), 
+	totalTimeSpent(0.0), 
+	turnsPlayed(0), 
+	searchDepth(0)
 {}
 
-Move AlphaBetaTT::chooseMove(GameState& gameState)
+Move IterativeDeepening::chooseMove(GameState& gameState)
 {
 	transpositionTable.clear();	// clean up data from previous searches
 
@@ -28,22 +31,24 @@ Move AlphaBetaTT::chooseMove(GameState& gameState)
 	nodesVisited = 0;
 	Timer timer;
 	timer.start();
-	Move moveToPlay = startAlphaBetaTT(gameState, SEARCH_DEPTH);
+	Move moveToPlay = startIterativeDeepening(gameState);
 	timer.stop();
 
 #ifdef LOG_STATS_PER_TURN
 	if (gameState.getCurrentPlayer() == EPlayerColors::Type::BLACK_PLAYER)
 	{
-		LOG_MESSAGE(StringBuilder() << "Alpha Beta with TT engine searching move for Black Player")
+		LOG_MESSAGE(StringBuilder() << "Iterative Deepening engine searching move for Black Player")
 	}
 	else
 	{
-		LOG_MESSAGE(StringBuilder() << "Alpha Beta with TT engine searching move for White Player")
+		LOG_MESSAGE(StringBuilder() << "Iterative Deepening engine searching move for White Player")
 	}
 
-	LOG_MESSAGE(StringBuilder() << "Search depth:					" << SEARCH_DEPTH)
+	LOG_MESSAGE(StringBuilder() << "Search depth:					" << searchDepth)
 	LOG_MESSAGE(StringBuilder() << "Number of nodes visited:			" << nodesVisited)
 	LOG_MESSAGE(StringBuilder() << "Time spent:					" << timer.getElapsedTimeInMilliSec() << " ms")
+	LOG_MESSAGE(StringBuilder() << "% of Transposition Table entries used:		" << ((double)transpositionTable.getNumEntriesUsed() / (TRANSPOSITION_TABLE_NUM_ENTRIES * 2.0)))
+	LOG_MESSAGE(StringBuilder() << "% of Transposition Table entries replaced:	" << ((double)transpositionTable.getNumReplacementsRequired() / (TRANSPOSITION_TABLE_NUM_ENTRIES * 2.0)))
 	LOG_MESSAGE("")
 #endif // LOG_STATS_PER_TURN
 
@@ -55,11 +60,11 @@ Move AlphaBetaTT::chooseMove(GameState& gameState)
 
 	return moveToPlay;
 #else
-	return startAlphaBetaTT(gameState, SEARCH_DEPTH);
+	return startIterativeDeepening(gameState, SEARCH_DEPTH);
 #endif // GATHER_STATISTICS
 }
 
-int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int beta)
+int IterativeDeepening::alphaBeta(GameState& gameState, int depth, int alpha, int beta)
 {
 #ifdef GATHER_STATISTICS
 	++nodesVisited;
@@ -75,7 +80,7 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	if (tableDataValid && !gameState.isMoveLegal(tableData.bestMove))
 	{
 		LOG_ERROR("ERROR: table data contains invalid move in AlphaBetaTT::alphaBetaTT()")
-		tableDataValid = false;
+			tableDataValid = false;
 	}
 #endif
 
@@ -125,8 +130,14 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	{
 		const Move& m = moves[i];											// select move
 		gameState.applyMove(m);												// apply move
-		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
+		transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
+		int value = -alphaBeta(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
+
+		if(clock.getElapsedTimeInMilliSec() >= MIN_SEARCH_TIME_MS + MAX_EXTRA_SEARCH_TIME_MS)		// exceeding time limit
+		{
+			return 0;
+		}
 
 		if (value > score)		// new best move found
 		{
@@ -160,12 +171,12 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 	return score;
 }
 
-int AlphaBetaTT::evaluate(const GameState& gameState) const
+int IterativeDeepening::evaluate(const GameState& gameState) const
 {
 	return evaluate(gameState, gameState.getWinner());
 }
 
-int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner) const
+int IterativeDeepening::evaluate(const GameState& gameState, EPlayerColors::Type winner) const
 {
 	EPlayerColors::Type evaluatingPlayer = gameState.getCurrentPlayer();
 
@@ -181,11 +192,12 @@ int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner
 	// at this point in code, compute evaluation from white's perspective
 	// at the end, before returning, negate if black is evaluating
 
-	// simple material difference, range = [-1600, 1600]
+	// simple material difference, weight = 100, range = [-1600, 1600]
 	int materialDifference = 100 * (gameState.getNumWhiteKnights() - gameState.getNumBlackKnights());
 
-	// progression = difference in furthest moved knight, range = [-350, 350]
+	// progression = difference in furthest moved knight, weight = 35, range = [-210, 210] (because max advantage = 6)
 	int progression = 0;
+
 	const std::vector<BoardLocation>& blackKnights = gameState.getBlackKnights();
 	const std::vector<BoardLocation>& whiteKnights = gameState.getWhiteKnights();
 
@@ -194,18 +206,21 @@ int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner
 
 	for (const BoardLocation& knight : blackKnights)
 	{
-		if (knight.y > blackProgression)						// black needs to move down -> increasing y
+		int distance = knight.y;
+
+		if (distance > blackProgression)
 		{
-			blackProgression = knight.y;
+			blackProgression = distance;
 		}
 	}
 
 	for (const BoardLocation& knight : whiteKnights)
 	{
-		int knightProgression = BOARD_HEIGHT - 1 - knight.y;	// white needs to move up -> decreasing y
-		if (knightProgression > whiteProgression)
+		int distance = BOARD_HEIGHT - 1 - knight.y;
+
+		if (distance > whiteProgression)
 		{
-			whiteProgression = knightProgression;
+			whiteProgression = distance;
 		}
 	}
 
@@ -223,65 +238,130 @@ int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner
 	return score;
 }
 
-Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
+int IterativeDeepening::getLastSearchDepth()
 {
-	int score = MathConstants::LOW_ENOUGH_INT;
-	int alpha = MathConstants::LOW_ENOUGH_INT;
-	int beta = MathConstants::LARGE_ENOUGH_INT;
+	return searchDepth;
+}
 
+double IterativeDeepening::getSecondsSearched()
+{
+	return clock.getElapsedTimeInSec();
+}
+
+Move IterativeDeepening::startIterativeDeepening(GameState& gameState)
+{
+	clock.start();
 	EPlayerColors::Type winner = gameState.getWinner();
 
 	// stop search if we reached max depth or have found a winner
-	if (depth == 0 || winner != EPlayerColors::Type::NOTHING)
+	if (winner != EPlayerColors::Type::NOTHING)
 	{
 		return INVALID_MOVE;		// can't return any normal move if game already ended
 	}
 
-	std::vector<Move> moves = gameState.generateAllMoves();
-	Move& bestMove = moves[0];
+	std::vector<Move> moves = gameState.generateAllMoves();		// find the moves available in root
+	std::vector<int> moveScores;								// will store the scores of the moves here, to use for sorting
+	moveScores.reserve(moves.size());
+	searchDepth = 0;
 
-	for (int i = 0; i < moves.size(); ++i)
+	// best move found from a complete search (so not considering searches that were terminated early)
+	Move bestMoveCompleteSearch = moves[0];
+
+	while (true)
 	{
-		const Move& m = moves[i];											// select move
-		gameState.applyMove(m);												// apply move
-		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
-		gameState.undoMove(m);												// finished searching this subtree, so undo the move
+		++searchDepth;	// increment search depth for the new search
 
-		if (value > score)		// new best move found
+		// ================= ALPHA BETA ALGORITHM STARTS HERE =================
+		int score = MathConstants::LOW_ENOUGH_INT;
+		int alpha = MathConstants::LOW_ENOUGH_INT;
+		int beta = MathConstants::LARGE_ENOUGH_INT;
+
+		// best move for only this particular search
+		Move bestMove = moves[0];
+
+		for (int i = 0; i < moves.size(); ++i)
 		{
-			score = value;
-			bestMove = m;
+			const Move& m = moves[i];											// select move
+			gameState.applyMove(m);												// apply move
+			transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
+			int value = -alphaBeta(gameState, searchDepth - 1, -beta, -alpha);	// continue searching
+			gameState.undoMove(m);												// finished searching this subtree, so undo the move
+
+			if(clock.getElapsedTimeInMilliSec() >= MIN_SEARCH_TIME_MS + MAX_EXTRA_SEARCH_TIME_MS)		// exceeding time limit
+			{
+				bestMove = INVALID_MOVE;
+				break;
+			}
+
+			moveScores[i] = value;
+
+			if (value > score)		// new best move found
+			{
+				score = value;
+				bestMove = m;
+			}
+			if (score > alpha)
+			{
+				alpha = score;
+			}
+			if (score >= beta)
+			{
+				break;
+			}
 		}
-		if (score > alpha)
+		// =================  ALPHA BETA ALGORITHM ENDS HERE  =================
+
+		if (!(bestMove == INVALID_MOVE))	// managed to complete the search within time
 		{
-			alpha = score;
+			lastRootEvaluation = score;
+
+			if (score == WIN_EVALUATION)	// the search was enough to prove a win for us, so return best move of this latest search
+			{
+				return bestMove;
+			}
+			else if (score == -WIN_EVALUATION)	// the search proved a win for opponent, so return best move of the previous search
+			{
+				return bestMoveCompleteSearch;
+			}
+
+			// finished search, and didn't prove a win for either team, so save the new best result
+			bestMoveCompleteSearch = bestMove;
 		}
-		if (score >= beta)
+		else
 		{
-			break;
+			--searchDepth;	// since last search was unsuccessful, decrement this so GUI doesn't lie to us
+		}
+
+		if (clock.getElapsedTimeInMilliSec() >= MIN_SEARCH_TIME_MS)		// exceeding time limit
+		{
+			clock.stop();
+			return bestMoveCompleteSearch;
+		}
+
+		MoveOrdering::orderMoves(moves, moveScores);	// order moves for the next search
+
+		// reset all scores to 0 before starting new search
+		for (int i = 0; i < moveScores.size(); ++i)
+		{
+			moveScores[i] = 0;
 		}
 	}
-
-	lastRootEvaluation = score;
-
-	return bestMove;
 }
 
-int AlphaBetaTT::getRootEvaluation()
+int IterativeDeepening::getRootEvaluation()
 {
 	return lastRootEvaluation;
 }
 
-int AlphaBetaTT::getWinEvaluation()
+int IterativeDeepening::getWinEvaluation()
 {
 	return WIN_EVALUATION;
 }
 
-void AlphaBetaTT::logEndOfMatchStats()
+void IterativeDeepening::logEndOfMatchStats()
 {
 #ifdef LOG_STATS_END_OF_MATCH
-	LOG_MESSAGE("Alpha Beta with TT engine END OF GAME stats:")
-	LOG_MESSAGE(StringBuilder() << "Search depth:					" << SEARCH_DEPTH)
+	LOG_MESSAGE("Iterative Deepening engine END OF GAME stats:")
 	LOG_MESSAGE(StringBuilder() << "Number of nodes visited:			" << totalNodesVisited)
 	LOG_MESSAGE(StringBuilder() << "Time spent:					" << totalTimeSpent << " ms")
 	LOG_MESSAGE("")

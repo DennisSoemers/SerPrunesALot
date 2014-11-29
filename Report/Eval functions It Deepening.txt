@@ -1,0 +1,6 @@
+ITERATIVE DEEPENING time = 20,000 + 10,000
+
+Black enhanced eval vs White normal eval ->	White wins (normal eval)
+White enhanced eval vs Black normal eval ->	Black wins (normal eval)
+
+CONCLUSION: with iterative deepening, normal eval > enhanced eval
