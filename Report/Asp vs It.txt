@@ -20,3 +20,7 @@ Black it. deepening vs white asp. search -> White won (asp search)
 DELTA = 100, guess odd-even effect compensation:
 
 Black it. deepening vs white asp. search -> White won (asp search)
+
+Black asp. search vs White it. deepening -> White won (it. deepening)
+
+some times re-searches at depth = 1 or 2, and at 8 or 9 when win proven.

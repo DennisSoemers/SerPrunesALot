@@ -141,13 +141,17 @@ std::vector<Move> GameState::generateAllMoves() const
 {
 	std::vector<Move> moves;
 
-	if (currentPlayer == EPlayerColors::Type::BLACK_PLAYER)
+	if(currentPlayer == EPlayerColors::Type::BLACK_PLAYER)
 	{
 		const std::vector<BoardLocation>& knightLocations = blackPlayer.getKnightLocations();
+		size_t numKnights = knightLocations.size();
 		moves.reserve(4 * knightLocations.size());		// at most 4 moves per knight, so reserve that much space
 
-		for (const BoardLocation& knightLoc : knightLocations)
+		// negating size_t will overflow into large positive, so still check i < numKnights
+		for(size_t i = numKnights - 1; i < numKnights; --i)
 		{
+			const BoardLocation& knightLoc = knightLocations[i];
+
 			// add the moves for this knight location
 			// generate the 4 potential moves hardcoded because we like speed
 			BoardLocation vertLeftLeft(knightLoc.x - 2, knightLoc.y + 1);
@@ -156,31 +160,35 @@ std::vector<Move> GameState::generateAllMoves() const
 			BoardLocation vertVertRight(knightLoc.x + 1, knightLoc.y + 2);
 
 			// test for each potential move if it's actually on the board and not occupied by our own knights
-			if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
+			if(vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
 			}
-			if (vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
+			if(vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
 			}
-			if (vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
+			if(vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
 			}
-			if (vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
+			if(vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
 			}
 		}
 	}
-	else if (currentPlayer == EPlayerColors::Type::WHITE_PLAYER)
+	else if(currentPlayer == EPlayerColors::Type::WHITE_PLAYER)
 	{
 		const std::vector<BoardLocation>& knightLocations = whitePlayer.getKnightLocations();
-		moves.reserve(4 * knightLocations.size());		// at most 4 moves per knight, so reserve that much space
+		size_t numKnights = knightLocations.size();
+		moves.reserve(4 * numKnights);		// at most 4 moves per knight, so reserve that much space
 
-		for (const BoardLocation& knightLoc : knightLocations)
+		// negating size_t will overflow into large positive, so still check i < numKnights
+		for(size_t i = numKnights - 1; i < numKnights; --i)
 		{
+			const BoardLocation& knightLoc = knightLocations[i];
+
 			// add the moves for this knight location
 			// generate the 4 potential moves hardcoded because we like speed
 			BoardLocation vertVertLeft(knightLoc.x - 1, knightLoc.y - 2);
@@ -189,19 +197,19 @@ std::vector<Move> GameState::generateAllMoves() const
 			BoardLocation vertRightRight(knightLoc.x + 2, knightLoc.y - 1);
 
 			// test for each potential move if it's actually on the board and not occupied by our own knights
-			if (vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
+			if(vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
 			}
-			if (vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
+			if(vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
 			}
-			if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
+			if(vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
 			}
-			if (vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
+			if(vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
 			{
 				moves.push_back(Move(knightLoc, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
 			}
