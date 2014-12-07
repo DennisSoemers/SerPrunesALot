@@ -1,0 +1,50 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{apacite}
+\usepackage[utf8]{inputenc}	% allows spanish letters required for Ontanon in references
+
+% Usage: \insertfigure{filename_without_extension}{caption text}{where to place}
+% To refer to this figure: \reffigure{filename_without_extension}
+\newcommand{\insertfigure}[3]{ 
+	\begin{figure}[#3]
+	\begin{center}
+	\includegraphics[width=8.5cm]{#1}
+	\caption{#2}
+	\label{#1}
+	\end{center}
+	\end{figure}
+}
+
+\newcommand{\reffigure}[1]{Figure~\ref{#1}}
+
+\begin{document}
+\begin{titlepage}
+\begin{center}
+{\huge \bfseries An Intelligent KnightThrough Agent} \\
+\vspace{1cm}
+{\large Dennis Soemers, Student ID: I6037052}\\
+\vspace{2cm}
+{\large \today}\\
+\vfill
+\end{center}
+\textrm{Maastricht University} \\
+\textrm{Department of Knowledge Engineering} \\
+\textrm{Maastricht, Netherlands} \\
+\textrm{Course: Intelligent Search \& Games} \\
+\textrm{Course Tutors: Dr. Jos Uiterwijk \& Dr. Mark Winands}
+
+\end{titlepage}
+
+%-----------------------------------------------------------------------------
+%		I N T R O D U C T I O N
+%-----------------------------------------------------------------------------
+\section{Introduction} 
+Introduction
+
+%-----------------------------------------------------------------------------
+%		R E F E R E N C E S
+%-----------------------------------------------------------------------------
+\bibliographystyle{apacite}
+\bibliography{References}
+
+\end{document}
