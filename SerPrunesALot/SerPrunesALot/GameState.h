@@ -3,11 +3,23 @@
 #include <inttypes.h>
 #include <vector>
 
-#include "BoardLocation.h"
 #include "GameConstants.h"
 #include "Move.h"
-#include "Player.h"
 #include "TranspositionTable.h"
+
+/** Possible colors that players can have */
+namespace EPlayerColors
+{
+	enum Type
+	{
+		NOTHING,
+
+		BLACK_PLAYER,
+		WHITE_PLAYER,
+
+		NUM_PLAYER_COLORS
+	};
+}
 
 /**
  * Defines a state of the game
@@ -31,7 +43,7 @@ public:
 	 * Tests whether it is possible to move from the ''from'' location to the ''to'' location
 	 * Does NOT test whether the corresponding player actually is the player that can currently move.
 	 */
-	bool canMove(BoardLocation from, BoardLocation to) const;
+	bool canMove(int from, int to) const;
 
 	/**
 	 * Same as canMove(BoardLocation from, BoardLocation to), but with an extra ''player'' argument.
@@ -43,37 +55,30 @@ public:
 	 * Useful to use instead of the method without the player argument if the player argument is already known
 	 * from the calling site and therefore the method no longer needs to obtain this information
 	 */
-	bool canMove(BoardLocation from, BoardLocation to, EPlayerColors::Type player) const;
-
-	/**
-	 * Generates a vector with ALL legal moves in the current game state.
-	 */
-	std::vector<Move> generateAllMoves() const;
+	bool canMove(int from, int to, EPlayerColors::Type player) const;
 
 	/** 
 	 * Generates a vector with all legal moves from the ''from'' location. 
 	 * Does NOT test whether the player on the ''from'' location actually is the current player 
 	 */
-	std::vector<Move> generateMoves(BoardLocation from) const;
+	std::vector<Move> generateMoves(int from) const;
 
+	/** Returns the bitboard corresponding to the given player */
+	uint64_t getBitboard(EPlayerColors::Type player) const;
 	/** Returns an EPlayerColors::Type indicating which player is the current player */
 	EPlayerColors::Type getCurrentPlayer() const;
-	/** Returns a const reference to the vector of the black player's knight locations */
-	const std::vector<BoardLocation>& getBlackKnights() const;
+	/** Returns the board locations that the given player can move to from the given square */
+	static const std::vector<int>& getMoveTargets(int location, EPlayerColors::Type color);
 	/** Returns the number of knights of the given color that could attack a given square (not taking into account whether it's occupied or not) */
-	int getNumAttackers(const BoardLocation& location, EPlayerColors::Type attackersColor) const;
+	//int getNumAttackers(const int location, EPlayerColors::Type attackersColor) const;
 	/** Returns the number of knights that the black player has */
 	int getNumBlackKnights() const;
 	/** Returns the number of knights that the white player has */
 	int getNumWhiteKnights() const;
 	/** Returns an EPlayerColors::Type indicating what (if anything) is occupying a given BoardLocation */
-	EPlayerColors::Type getOccupier(BoardLocation location) const;
+	EPlayerColors::Type getOccupier(int location) const;
 	/** Given a player's color, returns the color of the opponent */
 	EPlayerColors::Type getOpponentColor(EPlayerColors::Type color) const;
-	/** Returns a reference to the player object corresponding to the given player color. Returns the white player if invalid color is given */
-	Player& getPlayer(EPlayerColors::Type playerColor);
-	/** Returns a const reference to the vector of the white player's knight locations */
-	const std::vector<BoardLocation>& getWhiteKnights() const;
 	/** Returns the color of the player that won the game. Returns EPlayerColors::Type::NOTHING if the game didn't end yet */
 	EPlayerColors::Type getWinner() const;
 	/** Returns the Zobrist Hash Value of the current game state */
@@ -99,13 +104,15 @@ private:
 	/** Matrix of random numbers corresponding to board locations and player colors. Used for computing Zobrist Hash Values*/
 	static std::vector<std::vector<uint64_t>> zobristRandomNums;
 
-	/** Matrix of EPlayerColors::Types encoding the board. */
-	std::vector<std::vector<EPlayerColors::Type>> board;
+	/** Pre-computed table of move targets for the Black Player */
+	static std::vector<std::vector<int>> moveTargetsBlack;
+	/** Pre-computed table of move targets for the White Player */
+	static std::vector<std::vector<int>> moveTargetsWhite;
 
-	/** The black player */
-	Player blackPlayer;
-	/** The white player */
-	Player whitePlayer;
+	/** Bitboard of black pieces */
+	int64_t blackBitboard;
+	/** Bitboard of white pieces */
+	int64_t whiteBitboard;
 
 	/** The Zobrist Hash Value of this game state */
 	uint64_t zobristHash;
@@ -115,6 +122,15 @@ private:
 
 	/** The player whose turn it is */
 	EPlayerColors::Type currentPlayer;
+
+	/** The number of black knights remaining in this state */
+	int numBlackKnights;
+	/** The number of white knights remaining in this state */
+	int numWhiteKnights;
+
+	// Functions to initialize static move target tables
+	static std::vector<std::vector<int>> precomputeMoveTargetsBlack();
+	static std::vector<std::vector<int>> precomputeMoveTargetsWhite();
 
 	// don't want accidental copying of game states
 	GameState(const GameState&);

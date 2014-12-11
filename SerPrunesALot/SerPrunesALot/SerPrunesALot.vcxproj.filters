@@ -56,6 +56,12 @@
     <Filter Include="Source Files\Utils\Math\RNG">
       <UniqueIdentifier>{24c256e8-8ea7-4e9d-8168-28212ae60f92}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utils\Bitboards">
+      <UniqueIdentifier>{625f1ca3-b28e-47eb-b544-e4e24e8206f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils\Board">
+      <UniqueIdentifier>{967d7fa3-5f6f-4466-9ba4-f8568dd8ea35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -76,13 +82,7 @@
     <ClCompile Include="GameBoardButton.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="BoardLocation.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
     <ClCompile Include="GameState.cpp">
-      <Filter>Source Files\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
     <ClCompile Include="Move.cpp">
@@ -109,14 +109,14 @@
     <ClCompile Include="MoveOrdering.cpp">
       <Filter>Source Files\AI</Filter>
     </ClCompile>
-    <ClCompile Include="EnhancedEvalFunction.cpp">
-      <Filter>Source Files\AI</Filter>
-    </ClCompile>
     <ClCompile Include="IterativeDeepening.cpp">
       <Filter>Source Files\AI</Filter>
     </ClCompile>
     <ClCompile Include="AspirationSearch.cpp">
       <Filter>Source Files\AI</Filter>
+    </ClCompile>
+    <ClCompile Include="MoveGenerator.cpp">
+      <Filter>Source Files\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -137,16 +137,10 @@
     <ClInclude Include="GeneratedFiles\ui_SerPrunesALot.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="BoardLocation.h">
-      <Filter>Source Files\Game</Filter>
-    </ClInclude>
     <ClInclude Include="GameConstants.h">
       <Filter>Source Files\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameState.h">
-      <Filter>Source Files\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
       <Filter>Source Files\Game</Filter>
     </ClInclude>
     <ClInclude Include="VectorUtils.h">
@@ -188,14 +182,20 @@
     <ClInclude Include="MoveOrdering.h">
       <Filter>Source Files\AI</Filter>
     </ClInclude>
-    <ClInclude Include="EnhancedEvalFunction.h">
-      <Filter>Source Files\AI</Filter>
-    </ClInclude>
     <ClInclude Include="IterativeDeepening.h">
       <Filter>Source Files\AI</Filter>
     </ClInclude>
     <ClInclude Include="AspirationSearch.h">
       <Filter>Source Files\AI</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardUtils.hpp">
+      <Filter>Source Files\Utils\Board</Filter>
+    </ClInclude>
+    <ClInclude Include="Bitboards.hpp">
+      <Filter>Source Files\Utils\Bitboards</Filter>
+    </ClInclude>
+    <ClInclude Include="MoveGenerator.h">
+      <Filter>Source Files\Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -111,19 +111,19 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 		return evaluate(gameState, winner);
 	}
 
-	std::vector<Move> moves = gameState.generateAllMoves();
-	if (tableDataValid)		// order moves such that best move according to Transposition Table is explored first
-	{
-		MoveOrdering::orderMoves(moves, tableData.bestMove);
-	}
+	EPlayerColors::Type currentPlayer = gameState.getCurrentPlayer();
+	Move transpositionMove = (tableDataValid) ? tableData.bestMove : INVALID_MOVE;
+	MoveGenerator moveGenerator(currentPlayer,
+								gameState.getBitboard(currentPlayer),
+								gameState.getBitboard(gameState.getOpponentColor(currentPlayer)),
+								transpositionMove);
 
 	int score = MathConstants::LOW_ENOUGH_INT;
-	Move& bestMove = moves[0];
+	Move m = moveGenerator.nextMove();
+	Move bestMove = m;
 
-	int numMoves = moves.size();
-	for (int i = 0; i < numMoves; ++i)
+	while (!(m == INVALID_MOVE))
 	{
-		const Move& m = moves[i];											// select move
 		gameState.applyMove(m);												// apply move
 		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
@@ -141,6 +141,8 @@ int AlphaBetaTT::alphaBetaTT(GameState& gameState, int depth, int alpha, int bet
 		{
 			break;
 		}
+
+		m = moveGenerator.nextMove();
 	}
 
 	// Store data in Transposition Table
@@ -184,29 +186,63 @@ int AlphaBetaTT::evaluate(const GameState& gameState, EPlayerColors::Type winner
 	// simple material difference, range = [-1600, 1600]
 	int materialDifference = 100 * (gameState.getNumWhiteKnights() - gameState.getNumBlackKnights());
 
-	// progression = difference in furthest moved knight, range = [-350, 350]
+	// progression = difference in furthest moved knight, weight = 35, range = [-210, 210] (because max advantage = 6)
 	int progression = 0;
-	const std::vector<BoardLocation>& blackKnights = gameState.getBlackKnights();
-	const std::vector<BoardLocation>& whiteKnights = gameState.getWhiteKnights();
+
+	uint64_t blackBitboard = gameState.getBitboard(EPlayerColors::Type::BLACK_PLAYER);
+	uint64_t whiteBitboard = gameState.getBitboard(EPlayerColors::Type::BLACK_PLAYER);
 
 	int blackProgression = 0;
 	int whiteProgression = 0;
 
-	for (const BoardLocation& knight : blackKnights)
+	if(blackBitboard & Bitboards::ROW_2)
 	{
-		if (knight.y > blackProgression)						// black needs to move down -> increasing y
-		{
-			blackProgression = knight.y;
-		}
+		blackProgression = 6;
+	}
+	else if(blackBitboard & Bitboards::ROW_3)
+	{
+		blackProgression = 5;
+	}
+	else if(blackBitboard & Bitboards::ROW_4)
+	{
+		blackProgression = 4;
+	}
+	else if(blackBitboard & Bitboards::ROW_5)
+	{
+		blackProgression = 3;
+	}
+	else if(blackBitboard & Bitboards::ROW_6)
+	{
+		blackProgression = 2;
+	}
+	else if(blackBitboard & Bitboards::ROW_7)
+	{
+		blackProgression = 1;
 	}
 
-	for (const BoardLocation& knight : whiteKnights)
+	if(whiteBitboard & Bitboards::ROW_7)
 	{
-		int knightProgression = BOARD_HEIGHT - 1 - knight.y;	// white needs to move up -> decreasing y
-		if (knightProgression > whiteProgression)
-		{
-			whiteProgression = knightProgression;
-		}
+		whiteProgression = 6;
+	}
+	else if(whiteBitboard & Bitboards::ROW_6)
+	{
+		whiteProgression = 5;
+	}
+	else if(whiteBitboard & Bitboards::ROW_5)
+	{
+		whiteProgression = 4;
+	}
+	else if(whiteBitboard & Bitboards::ROW_4)
+	{
+		whiteProgression = 3;
+	}
+	else if(whiteBitboard & Bitboards::ROW_3)
+	{
+		whiteProgression = 2;
+	}
+	else if(whiteBitboard & Bitboards::ROW_2)
+	{
+		whiteProgression = 1;
 	}
 
 	progression = 35 * (whiteProgression - blackProgression);
@@ -237,12 +273,16 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 		return INVALID_MOVE;		// can't return any normal move if game already ended
 	}
 
-	std::vector<Move> moves = gameState.generateAllMoves();
-	Move& bestMove = moves[0];
+	EPlayerColors::Type currentPlayer = gameState.getCurrentPlayer();
+	MoveGenerator moveGenerator(currentPlayer,
+								gameState.getBitboard(currentPlayer),
+								gameState.getBitboard(gameState.getOpponentColor(currentPlayer)));
 
-	for (int i = 0; i < moves.size(); ++i)
+	Move m = moveGenerator.nextMove();
+	Move bestMove = m;
+
+	while(!(m == INVALID_MOVE))
 	{
-		const Move& m = moves[i];											// select move
 		gameState.applyMove(m);												// apply move
 		int value = -alphaBetaTT(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
@@ -260,6 +300,8 @@ Move AlphaBetaTT::startAlphaBetaTT(GameState& gameState, int depth)
 		{
 			break;
 		}
+
+		m = moveGenerator.nextMove();
 	}
 
 	lastRootEvaluation = score;

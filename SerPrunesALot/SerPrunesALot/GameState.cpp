@@ -1,27 +1,21 @@
+#include "Bitboards.hpp"
+#include "BoardUtils.hpp"
 #include "GameState.h"
 #include "Logger.h"
 #include "RNG.h"
 
 std::vector<std::vector<uint64_t>> GameState::zobristRandomNums = std::vector<std::vector<uint64_t>>();
+std::vector<std::vector<int>> GameState::moveTargetsBlack = GameState::precomputeMoveTargetsBlack();
+std::vector<std::vector<int>> GameState::moveTargetsWhite = GameState::precomputeMoveTargetsWhite();
 
 GameState::GameState()
-	: board(BOARD_HEIGHT, std::vector<EPlayerColors::Type>(BOARD_WIDTH)), 
-	blackPlayer(EPlayerColors::Type::BLACK_PLAYER), 
-	whitePlayer(EPlayerColors::Type::WHITE_PLAYER), 
+	: blackBitboard(0),
+	whiteBitboard(0),
 	zobristHash(0),
-	currentPlayer(EPlayerColors::Type::WHITE_PLAYER)
+	currentPlayer(EPlayerColors::Type::WHITE_PLAYER),
+	numBlackKnights(0),
+	numWhiteKnights(0)
 {
-	// initialize board as empty
-	board.reserve(BOARD_HEIGHT);
-
-	for (int i = 0; i < BOARD_HEIGHT; ++i)
-	{
-		for (int j = 0; j < BOARD_WIDTH; ++j)
-		{
-			board[i][j] = EPlayerColors::Type::NOTHING;
-		}
-	}
-
 	// initialize random numbers for Zobrist hashing if not done yet
 	if (zobristRandomNums.size() == 0)
 	{
@@ -47,6 +41,13 @@ GameState::GameState()
 	}
 
 	zobristPlayerNum = RNG::randomUint_64();
+
+#ifdef ALLOW_LOGGING
+	if(moveTargetsBlack.empty() || moveTargetsWhite.empty())
+	{
+		LOG_ERROR("ERROR: GameState::moveTargetsBlack and/or GameState::moveTargetsWhite not initialized!")
+	}
+#endif // ALLOW_LOGGING
 }
 
 GameState::~GameState()
@@ -58,58 +59,56 @@ void GameState::applyMove(const Move& move)
 	if (move.captured)
 	{
 		EPlayerColors::Type opponentColor = getOpponentColor(currentPlayer);
-		getPlayer(opponentColor).removeKnight(move.to);
 
 		// account for removal of enemy piece in the zobrist hash value
-		zobristHash ^= zobristRandomNums[move.to.y * BOARD_HEIGHT + move.to.x][opponentColor - 1];
-	}
+		zobristHash ^= zobristRandomNums[move.to][opponentColor - 1];
 
-	// change the board data
-	board[move.from.y][move.from.x] = EPlayerColors::Type::NOTHING;
-	board[move.to.y][move.to.x] = currentPlayer;
-
-	// account for movement of our own piece in the zobrist hash value
-	zobristHash ^= zobristRandomNums[move.to.y * BOARD_HEIGHT + move.to.x][currentPlayer - 1];
-	zobristHash ^= zobristRandomNums[move.from.y * BOARD_HEIGHT + move.from.x][currentPlayer - 1];
-
-	// find the ''from'' location in our list of knight locations, and update it to the ''to'' location
-	std::vector<BoardLocation>& knightLocations = getPlayer(currentPlayer).getKnightLocations();
-
-	size_t numKnights = knightLocations.size();
-	for (size_t i = 0; i < numKnights; ++i)
-	{
-		BoardLocation& loc = knightLocations[i];
-
-		if (loc == move.from)
+		// update opponent's bitboard
+		if(opponentColor == EPlayerColors::Type::BLACK_PLAYER)
 		{
-			loc.x = move.to.x;
-			loc.y = move.to.y;
-
-			// before returning, switch the current player
-			switchCurrentPlayer();
-			return;
+			blackBitboard ^= Bitboards::singleBit(move.to);
+			--numBlackKnights;
+		}
+		else
+		{
+			whiteBitboard ^= Bitboards::singleBit(move.to);
+			--numWhiteKnights;
 		}
 	}
 
+	// update our bitboard
+	if(currentPlayer == EPlayerColors::Type::BLACK_PLAYER)
+	{
+		blackBitboard ^= (Bitboards::singleBit(move.from) ^ Bitboards::singleBit(move.to));
+	}
+	else
+	{
+		whiteBitboard ^= (Bitboards::singleBit(move.from) ^ Bitboards::singleBit(move.to));
+	}
+
+	// account for movement of our own piece in the zobrist hash value
+	zobristHash ^= zobristRandomNums[move.to][currentPlayer - 1];
+	zobristHash ^= zobristRandomNums[move.from][currentPlayer - 1];
+
+	// finally, switch player
 	switchCurrentPlayer();
-	LOG_ERROR("Did not change the data of any previous knight location in GameState::applyMove()")
 }
 
-bool GameState::canMove(BoardLocation from, BoardLocation to) const
+bool GameState::canMove(int from, int to) const
 {
 	EPlayerColors::Type player = getOccupier(from);
 	return canMove(from, to, player);
 }
 
-bool GameState::canMove(BoardLocation from, BoardLocation to, EPlayerColors::Type player) const
+bool GameState::canMove(int from, int to, EPlayerColors::Type player) const
 {
 	if (player == getOccupier(to))		// cannot move to square occupied by our own knights
 	{
 		return false;
 	}
 
-	int dx = to.x - from.x;
-	int dy = to.y - from.y;
+	int dx = BoardUtils::x(to) - BoardUtils::x(from);
+	int dy = BoardUtils::y(to) - BoardUtils::y(from);
 
 	if (player == EPlayerColors::Type::BLACK_PLAYER)		// must move down
 	{
@@ -137,126 +136,40 @@ bool GameState::canMove(BoardLocation from, BoardLocation to, EPlayerColors::Typ
 	return false;
 }
 
-std::vector<Move> GameState::generateAllMoves() const
-{
-	std::vector<Move> moves;
-
-	if(currentPlayer == EPlayerColors::Type::BLACK_PLAYER)
-	{
-		const std::vector<BoardLocation>& knightLocations = blackPlayer.getKnightLocations();
-		size_t numKnights = knightLocations.size();
-		moves.reserve(4 * knightLocations.size());		// at most 4 moves per knight, so reserve that much space
-
-		// negating size_t will overflow into large positive, so still check i < numKnights
-		for(size_t i = numKnights - 1; i < numKnights; --i)
-		{
-			const BoardLocation& knightLoc = knightLocations[i];
-
-			// add the moves for this knight location
-			// generate the 4 potential moves hardcoded because we like speed
-			BoardLocation vertLeftLeft(knightLoc.x - 2, knightLoc.y + 1);
-			BoardLocation vertRightRight(knightLoc.x + 2, knightLoc.y + 1);
-			BoardLocation vertVertLeft(knightLoc.x - 1, knightLoc.y + 2);
-			BoardLocation vertVertRight(knightLoc.x + 1, knightLoc.y + 2);
-
-			// test for each potential move if it's actually on the board and not occupied by our own knights
-			if(vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
-			}
-			if(vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
-			}
-			if(vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
-			}
-			if(vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
-			}
-		}
-	}
-	else if(currentPlayer == EPlayerColors::Type::WHITE_PLAYER)
-	{
-		const std::vector<BoardLocation>& knightLocations = whitePlayer.getKnightLocations();
-		size_t numKnights = knightLocations.size();
-		moves.reserve(4 * numKnights);		// at most 4 moves per knight, so reserve that much space
-
-		// negating size_t will overflow into large positive, so still check i < numKnights
-		for(size_t i = numKnights - 1; i < numKnights; --i)
-		{
-			const BoardLocation& knightLoc = knightLocations[i];
-
-			// add the moves for this knight location
-			// generate the 4 potential moves hardcoded because we like speed
-			BoardLocation vertVertLeft(knightLoc.x - 1, knightLoc.y - 2);
-			BoardLocation vertVertRight(knightLoc.x + 1, knightLoc.y - 2);
-			BoardLocation vertLeftLeft(knightLoc.x - 2, knightLoc.y - 1);
-			BoardLocation vertRightRight(knightLoc.x + 2, knightLoc.y - 1);
-
-			// test for each potential move if it's actually on the board and not occupied by our own knights
-			if(vertVertLeft.isValid() && getOccupier(vertVertLeft) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
-			}
-			if(vertVertRight.isValid() && getOccupier(vertVertRight) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
-			}
-			if(vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
-			}
-			if(vertRightRight.isValid() && getOccupier(vertRightRight) != currentPlayer)
-			{
-				moves.push_back(Move(knightLoc, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
-			}
-		}
-	}
-
-	return moves;
-}
-
-std::vector<Move> GameState::generateMoves(BoardLocation from) const
+std::vector<Move> GameState::generateMoves(int from) const
 {
 	std::vector<Move> moves;
 	moves.reserve(4);	// at most 4 moves from any location. Some cases there will be even fewer moves, but not gonna bother saving that memory
 
 	EPlayerColors::Type player = getOccupier(from);
-	int dy = (player == EPlayerColors::Type::BLACK_PLAYER) ? 1 : -1;	// move down if black, or up if white
+	const std::vector<int>& moveTargets = GameState::getMoveTargets(from, player);
 
-	// generate the 4 potential moves hardcoded because we like speed
-	BoardLocation vertLeftLeft(from.x - 2, from.y + dy * 1);
-	BoardLocation vertRightRight(from.x + 2, from.y + dy * 1);
-	BoardLocation vertVertLeft(from.x - 1, from.y + dy * 2);
-	BoardLocation vertVertRight(from.x + 1, from.y + dy * 2);
+	uint64_t playerBitboard = (player == EPlayerColors::Type::BLACK_PLAYER) ? blackBitboard : whiteBitboard;
+	uint64_t opponentBitboard = (player == EPlayerColors::Type::BLACK_PLAYER) ? whiteBitboard : blackBitboard;
 
-	// test for each potential move if it's actually on the board and not occupied by our own knights
-	if (vertLeftLeft.isValid() && getOccupier(vertLeftLeft) != player)
+	for(int moveTarget : moveTargets)
 	{
-		moves.push_back(Move(from, vertLeftLeft, (getOccupier(vertLeftLeft) != EPlayerColors::Type::NOTHING)));
-	}
-	if (vertRightRight.isValid() && getOccupier(vertRightRight) != player)
-	{
-		moves.push_back(Move(from, vertRightRight, (getOccupier(vertRightRight) != EPlayerColors::Type::NOTHING)));
-	}
-	if (vertVertLeft.isValid() && getOccupier(vertVertLeft) != player)
-	{
-		moves.push_back(Move(from, vertVertLeft, (getOccupier(vertVertLeft) != EPlayerColors::Type::NOTHING)));
-	}
-	if (vertVertRight.isValid() && getOccupier(vertVertRight) != player)
-	{
-		moves.push_back(Move(from, vertVertRight, (getOccupier(vertVertRight) != EPlayerColors::Type::NOTHING)));
+		uint64_t moveTargetBit = Bitboards::singleBit(moveTarget);
+
+		if(!(moveTargetBit & playerBitboard))		// ensure we have no piece on the move target
+		{
+			if(moveTargetBit & opponentBitboard)	// opponent occupies target location
+			{
+				moves.push_back(Move(from, moveTarget, true));
+			}
+			else
+			{
+				moves.push_back(Move(from, moveTarget, false));
+			}
+		}
 	}
 
 	return moves;
 }
 
-const std::vector<BoardLocation>& GameState::getBlackKnights() const
+uint64_t GameState::getBitboard(EPlayerColors::Type player) const
 {
-	return blackPlayer.getKnightLocations();
+	return (player == EPlayerColors::Type::BLACK_PLAYER) ? blackBitboard : whiteBitboard;
 }
 
 EPlayerColors::Type GameState::getCurrentPlayer() const
@@ -264,7 +177,7 @@ EPlayerColors::Type GameState::getCurrentPlayer() const
 	return currentPlayer;
 }
 
-int GameState::getNumAttackers(const BoardLocation& location, EPlayerColors::Type attackersColor) const
+/*int GameState::getNumAttackers(const BoardLocation& location, EPlayerColors::Type attackersColor) const
 {
 	int numAttackers = 0;
 
@@ -322,21 +235,39 @@ int GameState::getNumAttackers(const BoardLocation& location, EPlayerColors::Typ
 	}
 
 	return numAttackers;
+}*/
+
+const std::vector<int>& GameState::getMoveTargets(int location, EPlayerColors::Type color)
+{
+	return (color == EPlayerColors::Type::BLACK_PLAYER) ? moveTargetsBlack[location] : moveTargetsWhite[location];
 }
 
-EPlayerColors::Type GameState::getOccupier(BoardLocation location) const
+EPlayerColors::Type GameState::getOccupier(int location) const
 {
-	return board[location.y][location.x];
+	uint64_t locationBit = Bitboards::singleBit(location);
+
+	if(blackBitboard & locationBit)
+	{
+		return EPlayerColors::Type::BLACK_PLAYER;
+	}
+	else if(whiteBitboard & locationBit)
+	{
+		return EPlayerColors::Type::WHITE_PLAYER;
+	}
+	else
+	{
+		return EPlayerColors::Type::NOTHING;
+	}
 }
 
 int GameState::getNumBlackKnights() const
 {
-	return blackPlayer.getNumKnights();
+	return numBlackKnights;
 }
 
 int GameState::getNumWhiteKnights() const
 {
-	return whitePlayer.getNumKnights();
+	return numWhiteKnights;
 }
 
 
@@ -356,44 +287,22 @@ EPlayerColors::Type GameState::getOpponentColor(EPlayerColors::Type color) const
 	}
 }
 
-Player& GameState::getPlayer(EPlayerColors::Type playerColor)
-{
-	if (playerColor == EPlayerColors::Type::BLACK_PLAYER)
-	{
-		return blackPlayer;
-	}
-	else
-	{
-		return whitePlayer;
-	}
-}
-
-const std::vector<BoardLocation>& GameState::getWhiteKnights() const
-{
-	return whitePlayer.getKnightLocations();
-}
-
 EPlayerColors::Type GameState::getWinner() const
 {
-	for (int i = 0; i < BOARD_WIDTH; ++i)
+	if(blackBitboard & Bitboards::ROW_1)		// non-zero intersection between black bitboard and bottom row
 	{
-		if (board[0][i] == EPlayerColors::Type::WHITE_PLAYER)
-		{
-			return EPlayerColors::Type::WHITE_PLAYER;
-		}
-
-		if (board[BOARD_HEIGHT - 1][i] == EPlayerColors::Type::BLACK_PLAYER)
-		{
-			return EPlayerColors::Type::BLACK_PLAYER;
-		}
+		return EPlayerColors::Type::BLACK_PLAYER;
 	}
-
-	if (blackPlayer.getNumKnights() == 0)
+	else if(whiteBitboard & Bitboards::ROW_8)	// non-zero intersection between white bitboard and top row
 	{
 		return EPlayerColors::Type::WHITE_PLAYER;
 	}
 
-	if (whitePlayer.getNumKnights() == 0)
+	if (numBlackKnights == 0)
+	{
+		return EPlayerColors::Type::WHITE_PLAYER;
+	}
+	else if (numWhiteKnights == 0)
 	{
 		return EPlayerColors::Type::BLACK_PLAYER;
 	}
@@ -423,8 +332,8 @@ bool GameState::isMoveLegal(const Move& move) const
 		return false;
 	}
 
-	int dx = move.to.x - move.from.x;
-	int dy = move.to.y - move.from.y;
+	int dx = BoardUtils::x(move.to) - BoardUtils::x(move.from);
+	int dy = BoardUtils::y(move.to) - BoardUtils::y(move.from);
 
 	if (currentPlayer == EPlayerColors::Type::BLACK_PLAYER)		// must move down
 	{
@@ -454,40 +363,24 @@ bool GameState::isMoveLegal(const Move& move) const
 
 void GameState::reset()
 {
-	// make sure both players have no Knights from any previous games
-	blackPlayer.removeAllKnights();
-	whitePlayer.removeAllKnights();
+	// reset number of knights for each player
+	numBlackKnights = 16;
+	numWhiteKnights = 16;
 
 	// set current zobrist hash value to the zobrist player number, to indicate it's white player's turn
 	zobristHash = zobristPlayerNum;
 
 	// fill top 2 rows with black pieces and bottom 2 rows with white pieces
+	blackBitboard = Bitboards::ROW_8 | Bitboards::ROW_7;
+	whiteBitboard = Bitboards::ROW_1 | Bitboards::ROW_2;
+
+	// update zobrist hash value
 	for (int i = 0; i < BOARD_WIDTH; ++i)
 	{
-		board[0][i] = EPlayerColors::Type::BLACK_PLAYER;
-		board[1][i] = EPlayerColors::Type::BLACK_PLAYER;
-		blackPlayer.addKnight(BoardLocation(i, 0));
-		blackPlayer.addKnight(BoardLocation(i, 1));
-
-		board[BOARD_HEIGHT - 1][i] = EPlayerColors::Type::WHITE_PLAYER;
-		board[BOARD_HEIGHT - 2][i] = EPlayerColors::Type::WHITE_PLAYER;
-		whitePlayer.addKnight(BoardLocation(i, BOARD_HEIGHT - 1));
-		whitePlayer.addKnight(BoardLocation(i, BOARD_HEIGHT - 2));
-
-		// update zobrist hash value
 		zobristHash ^= zobristRandomNums[0 * BOARD_HEIGHT + i][EPlayerColors::Type::BLACK_PLAYER - 1];
 		zobristHash ^= zobristRandomNums[1 * BOARD_HEIGHT + i][EPlayerColors::Type::BLACK_PLAYER - 1];
 		zobristHash ^= zobristRandomNums[(BOARD_HEIGHT - 1) * BOARD_HEIGHT + i][EPlayerColors::Type::WHITE_PLAYER - 1];
 		zobristHash ^= zobristRandomNums[(BOARD_HEIGHT - 2) * BOARD_HEIGHT + i][EPlayerColors::Type::WHITE_PLAYER - 1];
-	}
-
-	// empty the middle section
-	for (int i = 2; i < BOARD_HEIGHT - 2; ++i)
-	{
-		for (int j = 0; j < BOARD_WIDTH; ++j)
-		{
-			board[i][j] = EPlayerColors::Type::NOTHING;
-		}
 	}
 
 	// reset current player status
@@ -518,39 +411,126 @@ void GameState::undoMove(const Move& move)
 	if (move.captured)
 	{
 		EPlayerColors::Type opponentColor = getOpponentColor(currentPlayer);
-		getPlayer(opponentColor).addKnight(move.to);
-		board[move.to.y][move.to.x] = opponentColor;
 
 		// account for removal of enemy piece in the zobrist hash value
-		zobristHash ^= zobristRandomNums[move.to.y * BOARD_HEIGHT + move.to.x][opponentColor - 1];
-	}
-	else
-	{
-		board[move.to.y][move.to.x] = EPlayerColors::Type::NOTHING;
-	}
+		zobristHash ^= zobristRandomNums[move.to][opponentColor - 1];
 
-	// move our piece back to where we came from
-	board[move.from.y][move.from.x] = currentPlayer;
-
-	// account for movement of our own piece in the zobrist hash value
-	zobristHash ^= zobristRandomNums[move.to.y * BOARD_HEIGHT + move.to.x][currentPlayer - 1];
-	zobristHash ^= zobristRandomNums[move.from.y * BOARD_HEIGHT + move.from.x][currentPlayer - 1];
-
-	// find the ''to'' location in our list of knight locations, and revert it to the ''from'' location
-	std::vector<BoardLocation>& knightLocations = getPlayer(currentPlayer).getKnightLocations();
-
-	size_t numKnights = knightLocations.size();
-	for (size_t i = 0; i < numKnights; ++i)
-	{
-		BoardLocation& loc = knightLocations[i];
-
-		if (loc == move.to)
+		// update opponent's bitboard
+		if(opponentColor == EPlayerColors::Type::BLACK_PLAYER)
 		{
-			loc.x = move.from.x;
-			loc.y = move.from.y;
-			return;
+			blackBitboard ^= Bitboards::singleBit(move.to);
+			++numBlackKnights;
+		}
+		else
+		{
+			whiteBitboard ^= Bitboards::singleBit(move.to);
+			++numWhiteKnights;
 		}
 	}
 
-	LOG_ERROR("Did not change the data of any previous knight location in GameState::undoMove()")
+	// update our bitboard
+	if(currentPlayer == EPlayerColors::Type::BLACK_PLAYER)
+	{
+		blackBitboard ^= (Bitboards::singleBit(move.from) ^ Bitboards::singleBit(move.to));
+	}
+	else
+	{
+		whiteBitboard ^= (Bitboards::singleBit(move.from) ^ Bitboards::singleBit(move.to));
+	}
+
+	// account for movement of our own piece in the zobrist hash value
+	zobristHash ^= zobristRandomNums[move.to][currentPlayer - 1];
+	zobristHash ^= zobristRandomNums[move.from][currentPlayer - 1];
+}
+
+std::vector<std::vector<int>> GameState::precomputeMoveTargetsBlack()
+{
+	std::vector<std::vector<int>> moves;
+
+	for(int y = 0; y < BOARD_HEIGHT; ++y)
+	{
+		for(int x = 0; x < BOARD_WIDTH; ++x)
+		{
+			int boardLocation = BoardUtils::coordsToIndex(x, y);
+
+			std::vector<int> moveTargets;
+			moveTargets.reserve(4);
+
+			if(y < BOARD_HEIGHT - 1)		// can move at least one square down
+			{
+				if(x < BOARD_WIDTH - 2)			// can move at least two squares to the right
+				{
+					moveTargets.push_back(BoardUtils::coordsToIndex(x + 2, y + 1));
+				}
+
+				if(x > 2)						// can move at least two squares to the left
+				{
+					moveTargets.push_back(BoardUtils::coordsToIndex(x - 2, y + 1));
+				}
+
+				if(y < BOARD_HEIGHT - 2)		// can move at least two squares down
+				{
+					if(x < BOARD_WIDTH - 1)			// can move at least one square to the right
+					{
+						moveTargets.push_back(BoardUtils::coordsToIndex(x + 1, y + 2));
+					}
+
+					if(x > 1)						// can move at least one square to the left
+					{
+						moveTargets.push_back(BoardUtils::coordsToIndex(x - 1, y + 2));
+					}
+				}
+			}
+
+			moveTargetsBlack.push_back(moveTargets);
+		}
+	}
+
+	return moves;
+}
+
+std::vector<std::vector<int>> GameState::precomputeMoveTargetsWhite()
+{
+	std::vector<std::vector<int>> moves;
+
+	for(int y = 0; y < BOARD_HEIGHT; ++y)
+	{
+		for(int x = 0; x < BOARD_WIDTH; ++x)
+		{
+			int boardLocation = BoardUtils::coordsToIndex(x, y);
+
+			std::vector<int> moveTargets;
+			moveTargets.reserve(4);
+
+			if(y > 0)						// can move at least one square up
+			{
+				if(x < BOARD_WIDTH - 2)			// can move at least two squares to the right
+				{
+					moveTargets.push_back(BoardUtils::coordsToIndex(x + 2, y - 1));
+				}
+
+				if(x > 2)						// can move at least two squares to the left
+				{
+					moveTargets.push_back(BoardUtils::coordsToIndex(x - 2, y - 1));
+				}
+
+				if(y > 1)						// can move at least two squares up
+				{
+					if(x < BOARD_WIDTH - 1)			// can move at least one square to the right
+					{
+						moveTargets.push_back(BoardUtils::coordsToIndex(x + 1, y - 2));
+					}
+
+					if(x > 1)						// can move at least one square to the left
+					{
+						moveTargets.push_back(BoardUtils::coordsToIndex(x - 1, y - 2));
+					}
+				}
+			}
+
+			moveTargetsWhite.push_back(moveTargets);
+		}
+	}
+
+	return moves;
 }

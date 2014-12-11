@@ -35,9 +35,6 @@ public:
 	 */
 	void initBoard();
 
-	/** Highlights ALL locations on the board that can be moved to this turn */
-	void highlightAllMoves();
-
 	/** Tells the AI engine to play this turn */
 	void playTurnAi();
 
@@ -90,8 +87,6 @@ private:
 	QAction* blackPlayerBasicAlphaBeta;
 	/** If toggled, Black Player will use Alpha Beta with Transposition Table */
 	QAction* blackPlayerAlphaBetaTT;
-	/** If toggled, Black Player will use the engine with Enhanced Evaluation Function */
-	QAction* blackPlayerEnhancedEvalFunction;
 	/** If toggled, Black Player will use the Iterative Deepening engine */
 	QAction* blackPlayerIterativeDeepening;
 	/** If toggled, Black Player will use the Aspiration Search engine */
@@ -101,8 +96,6 @@ private:
 	QAction* whitePlayerBasicAlphaBeta;
 	/** If toggled, White Player will use Alpha Beta with Transposition Table */
 	QAction* whitePlayerAlphaBetaTT;
-	/** If toggled, White Player will use the engine with Enhanced Evaluation Function */
-	QAction* whitePlayerEnhancedEvalFunction;
 	/** If toggled, White Player will use the Iterative Deepening engine */
 	QAction* whitePlayerIterativeDeepening;
 	/** If toggled, White Player will use the Aspiration Search engine */

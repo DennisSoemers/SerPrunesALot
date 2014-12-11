@@ -117,19 +117,19 @@ int AspirationSearch::alphaBeta(GameState& gameState, int depth, int alpha, int 
 		return evaluate(gameState, winner);
 	}
 
-	std::vector<Move> moves = gameState.generateAllMoves();
-	if(tableDataValid)		// order moves such that best move according to Transposition Table is explored first
-	{
-		MoveOrdering::orderMoves(moves, tableData.bestMove);
-	}
+	EPlayerColors::Type currentPlayer = gameState.getCurrentPlayer();
+	Move transpositionMove = (tableDataValid) ? tableData.bestMove : INVALID_MOVE;
+	MoveGenerator moveGenerator(currentPlayer,
+								gameState.getBitboard(currentPlayer),
+								gameState.getBitboard(gameState.getOpponentColor(currentPlayer)),
+								transpositionMove);
 
 	int score = MathConstants::LOW_ENOUGH_INT;
-	Move& bestMove = moves[0];
+	Move m = moveGenerator.nextMove();
+	Move bestMove = m;
 
-	int numMoves = moves.size();
-	for(int i = 0; i < numMoves; ++i)
+	while(!(m == INVALID_MOVE))
 	{
-		const Move& m = moves[i];											// select move
 		gameState.applyMove(m);												// apply move
 		transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
 		int value = -alphaBeta(gameState, depth - 1, -beta, -alpha);		// continue searching
@@ -153,6 +153,8 @@ int AspirationSearch::alphaBeta(GameState& gameState, int depth, int alpha, int 
 		{
 			break;
 		}
+
+		m = moveGenerator.nextMove();
 	}
 
 	// Store data in Transposition Table
@@ -199,30 +201,60 @@ int AspirationSearch::evaluate(const GameState& gameState, EPlayerColors::Type w
 	// progression = difference in furthest moved knight, weight = 35, range = [-210, 210] (because max advantage = 6)
 	int progression = 0;
 
-	const std::vector<BoardLocation>& blackKnights = gameState.getBlackKnights();
-	const std::vector<BoardLocation>& whiteKnights = gameState.getWhiteKnights();
+	uint64_t blackBitboard = gameState.getBitboard(EPlayerColors::Type::BLACK_PLAYER);
+	uint64_t whiteBitboard = gameState.getBitboard(EPlayerColors::Type::BLACK_PLAYER);
 
 	int blackProgression = 0;
 	int whiteProgression = 0;
 
-	for(const BoardLocation& knight : blackKnights)
+	if(blackBitboard & Bitboards::ROW_2)
 	{
-		int distance = knight.y;
-
-		if(distance > blackProgression)
-		{
-			blackProgression = distance;
-		}
+		blackProgression = 6;
+	}
+	else if(blackBitboard & Bitboards::ROW_3)
+	{
+		blackProgression = 5;
+	}
+	else if(blackBitboard & Bitboards::ROW_4)
+	{
+		blackProgression = 4;
+	}
+	else if(blackBitboard & Bitboards::ROW_5)
+	{
+		blackProgression = 3;
+	}
+	else if(blackBitboard & Bitboards::ROW_6)
+	{
+		blackProgression = 2;
+	}
+	else if(blackBitboard & Bitboards::ROW_7)
+	{
+		blackProgression = 1;
 	}
 
-	for(const BoardLocation& knight : whiteKnights)
+	if(whiteBitboard & Bitboards::ROW_7)
 	{
-		int distance = BOARD_HEIGHT - 1 - knight.y;
-
-		if(distance > whiteProgression)
-		{
-			whiteProgression = distance;
-		}
+		whiteProgression = 6;
+	}
+	else if(whiteBitboard & Bitboards::ROW_6)
+	{
+		whiteProgression = 5;
+	}
+	else if(whiteBitboard & Bitboards::ROW_5)
+	{
+		whiteProgression = 4;
+	}
+	else if(whiteBitboard & Bitboards::ROW_4)
+	{
+		whiteProgression = 3;
+	}
+	else if(whiteBitboard & Bitboards::ROW_3)
+	{
+		whiteProgression = 2;
+	}
+	else if(whiteBitboard & Bitboards::ROW_2)
+	{
+		whiteProgression = 1;
 	}
 
 	progression = 35 * (whiteProgression - blackProgression);
@@ -260,8 +292,23 @@ Move AspirationSearch::startAspirationSearch(GameState& gameState)
 		return INVALID_MOVE;		// can't return any normal move if game already ended
 	}
 
-	std::vector<Move> moves = gameState.generateAllMoves();		// find the moves available in root
-	std::vector<int> moveScores;								// will store the scores of the moves here, to use for sorting
+	std::vector<Move> moves;				// will store all the moves in the root node, necessary for move ordering based on scores found in previous searches
+	moves.reserve(16 * 4);
+
+	EPlayerColors::Type currentPlayer = gameState.getCurrentPlayer();
+	MoveGenerator moveGenerator(currentPlayer,
+								gameState.getBitboard(currentPlayer),
+								gameState.getBitboard(gameState.getOpponentColor(currentPlayer)));
+
+	Move rootMove = moveGenerator.nextMove();
+
+	while(!(rootMove == INVALID_MOVE))
+	{
+		moves.push_back(rootMove);
+		rootMove = moveGenerator.nextMove();
+	}
+
+	std::vector<int> moveScores;			// will store the scores of the moves here, to use for sorting
 	moveScores.reserve(moves.size());
 
 	// best move found from a complete search (so not considering searches that were terminated early)

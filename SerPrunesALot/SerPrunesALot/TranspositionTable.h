@@ -9,7 +9,7 @@
 //#define VERIFY_MOVE_LEGALITY
 
 /**
- * A 64-bit hash value, with 21 bits as primary hash code and 43 bits as secondary hash code
+ * A 64-bit hash value, with 22 bits as primary hash code and 42 bits as secondary hash code
  *
  * The primary and secondary hash codes can be retrieved individually from the hashCodes field,
  * and the entire hash value (consisting of both codes) can be retrieved as the value field.
@@ -19,8 +19,8 @@ union HashValue
 	// Allows individual access to primary and secondary codes
 	struct HashCodes
 	{
-		uint64_t primary : 21;
-		uint64_t secondary : 43;
+		uint64_t primary : 22;
+		uint64_t secondary : 42;
 	} hashCodes;
 
 	// the entire 64-bits value

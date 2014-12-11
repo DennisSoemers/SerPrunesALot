@@ -84,8 +84,6 @@
     <ClCompile Include="AlphaBetaTT.cpp" />
     <ClCompile Include="AspirationSearch.cpp" />
     <ClCompile Include="BasicAlphaBeta.cpp" />
-    <ClCompile Include="BoardLocation.cpp" />
-    <ClCompile Include="EnhancedEvalFunction.cpp" />
     <ClCompile Include="GameBoardButton.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_GameBoardButton.cpp">
@@ -109,8 +107,8 @@
     <ClCompile Include="IterativeDeepening.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Move.cpp" />
+    <ClCompile Include="MoveGenerator.cpp" />
     <ClCompile Include="MoveOrdering.cpp" />
-    <ClCompile Include="Player.cpp" />
     <ClCompile Include="RNG.cpp" />
     <ClCompile Include="SerPrunesALotWindow.cpp" />
     <ClCompile Include="TranspositionTable.cpp" />
@@ -144,7 +142,7 @@
     <ClInclude Include="AlphaBetaTT.h" />
     <ClInclude Include="AspirationSearch.h" />
     <ClInclude Include="BasicAlphaBeta.h" />
-    <ClInclude Include="BoardLocation.h" />
+    <ClInclude Include="Bitboards.hpp" />
     <CustomBuild Include="GameBoardButton.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing GameBoardButton.h...</Message>
@@ -155,7 +153,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets"</Command>
     </CustomBuild>
-    <ClInclude Include="EnhancedEvalFunction.h" />
+    <ClInclude Include="BoardUtils.hpp" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GeneratedFiles\ui_SerPrunesALot.h" />
@@ -163,9 +161,9 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MathConstants.h" />
     <ClInclude Include="Move.h" />
+    <ClInclude Include="MoveGenerator.h" />
     <ClInclude Include="MoveOrdering.h" />
     <ClInclude Include="Options.h" />
-    <ClInclude Include="Player.h" />
     <ClInclude Include="RNG.h" />
     <ClInclude Include="StringBuilder.h" />
     <ClInclude Include="Timer.hpp" />

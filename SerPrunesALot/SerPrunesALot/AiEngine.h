@@ -4,6 +4,7 @@
 
 #include "GameState.h"
 #include "Move.h"
+#include "MoveGenerator.h"
 
 /**
  * Interface to an AI Engine class. 

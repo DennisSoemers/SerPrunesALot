@@ -68,12 +68,17 @@ int BasicAlphaBeta::alphaBeta(GameState& gameState, int depth, int alpha, int be
 		return evaluate(gameState, winner);
 	}
 
-	std::vector<Move> moves = gameState.generateAllMoves();
-	int score = MathConstants::LOW_ENOUGH_INT;
+	EPlayerColors::Type currentPlayer = gameState.getCurrentPlayer();
+	MoveGenerator moveGenerator(currentPlayer,
+								gameState.getBitboard(currentPlayer),
+								gameState.getBitboard(gameState.getOpponentColor(currentPlayer)));
 
-	for (int i = 0; i < moves.size(); ++i)
+	int score = MathConstants::LOW_ENOUGH_INT;
+	Move m = moveGenerator.nextMove();
+	Move bestMove = m;
+
+	while(!(m == INVALID_MOVE))
 	{
-		Move m = moves[i];													// select move
 		gameState.applyMove(m);												// apply move
 		int value = -alphaBeta(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
@@ -90,6 +95,8 @@ int BasicAlphaBeta::alphaBeta(GameState& gameState, int depth, int alpha, int be
 		{
 			break;
 		}
+
+		m = moveGenerator.nextMove();
 	}
 
 	return score;
@@ -135,15 +142,20 @@ Move BasicAlphaBeta::startAlphaBeta(GameState& gameState, int depth)
 		return INVALID_MOVE;		// can't return any normal move if game already ended
 	}
 
-	std::vector<Move> moves = gameState.generateAllMoves();
-	Move bestMove = moves.at(0);
+	EPlayerColors::Type currentPlayer = gameState.getCurrentPlayer();
+	MoveGenerator moveGenerator(currentPlayer,
+								gameState.getBitboard(currentPlayer),
+								gameState.getBitboard(gameState.getOpponentColor(currentPlayer)));
+
+	Move m = moveGenerator.nextMove();
+	Move bestMove = m;
+
 	int score = MathConstants::LOW_ENOUGH_INT;
 	int alpha = MathConstants::LOW_ENOUGH_INT;
 	int beta = MathConstants::LARGE_ENOUGH_INT;
 
-	for (int i = 0; i < moves.size(); ++i)
+	while(!(m == INVALID_MOVE))
 	{
-		Move m = moves[i];													// select move
 		gameState.applyMove(m);												// apply move
 		int value = -alphaBeta(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
@@ -153,6 +165,7 @@ Move BasicAlphaBeta::startAlphaBeta(GameState& gameState, int depth)
 			score = value;
 			bestMove = m;
 		}
+
 		if (score > alpha)
 		{
 			alpha = score;
@@ -161,6 +174,8 @@ Move BasicAlphaBeta::startAlphaBeta(GameState& gameState, int depth)
 		{
 			break;
 		}
+
+		m = moveGenerator.nextMove();
 	}
 
 	lastRootEvaluation = score;

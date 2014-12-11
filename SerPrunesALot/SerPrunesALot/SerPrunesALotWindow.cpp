@@ -12,7 +12,7 @@
 #include "AlphaBetaTT.h"
 #include "AspirationSearch.h"
 #include "BasicAlphaBeta.h"
-#include "EnhancedEvalFunction.h"
+#include "BoardUtils.hpp"
 #include "IterativeDeepening.h"
 #include "Logger.h"
 #include "Move.h"
@@ -144,10 +144,6 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	QAction* undoLastMoveButton = new QAction("Undo Last Move", menuBar());
 	connect(undoLastMoveButton, &QAction::triggered, this, &SerPrunesALotWindow::undoLastMove);
 
-	// Create and add button to highlight all possible moves this turn
-	QAction* highlightAllMovesButton = new QAction("Highlight All Moves", menuBar());
-	connect(highlightAllMovesButton, &QAction::triggered, this, &SerPrunesALotWindow::highlightAllMoves);
-
 	// Create menus to choose AI engines
 	QMenu* chooseEngineMenu = new QMenu("Choose AI Engine");
 	QMenu* blackEngineMenu = new QMenu("Black Player");
@@ -159,52 +155,44 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 
 	blackPlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", blackEngines);
 	blackPlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", blackEngines);
-	blackPlayerEnhancedEvalFunction = new QAction("Alpha-Beta with Transposition Table and Enhanced Evaluation Function", blackEngines);
 	blackPlayerIterativeDeepening = new QAction("Iterative Deepening", blackEngines);
 	blackPlayerAspirationSearch = new QAction("Aspiration Search", blackEngines);
 
 	whitePlayerBasicAlphaBeta = new QAction("Basic Alpha-Beta", whiteEngines);
 	whitePlayerAlphaBetaTT = new QAction("Alpha-Beta with Transposition Table", whiteEngines);
-	whitePlayerEnhancedEvalFunction = new QAction("Alpha-Beta with Transposition Table and Enhanced Evaluation Function", whiteEngines);
 	whitePlayerIterativeDeepening = new QAction("Iterative Deepening", whiteEngines);
 	whitePlayerAspirationSearch = new QAction("Aspiration Search", whiteEngines);
 
 	// Connect buttons to functions
 	connect(blackPlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
-	connect(blackPlayerEnhancedEvalFunction, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerIterativeDeepening, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 	connect(blackPlayerAspirationSearch, &QAction::triggered, this, &SerPrunesALotWindow::resetBlackAiEngine);
 
 	connect(whitePlayerBasicAlphaBeta, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerAlphaBetaTT, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
-	connect(whitePlayerEnhancedEvalFunction, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerIterativeDeepening, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 	connect(whitePlayerAspirationSearch, &QAction::triggered, this, &SerPrunesALotWindow::resetWhiteAiEngine);
 
 	// Add buttons to groups
 	blackPlayerBasicAlphaBeta->setActionGroup(blackEngines);
 	blackPlayerAlphaBetaTT->setActionGroup(blackEngines);
-	blackPlayerEnhancedEvalFunction->setActionGroup(blackEngines);
 	blackPlayerIterativeDeepening->setActionGroup(blackEngines);
 	blackPlayerAspirationSearch->setActionGroup(blackEngines);
 
 	whitePlayerBasicAlphaBeta->setActionGroup(whiteEngines);
 	whitePlayerAlphaBetaTT->setActionGroup(whiteEngines);
-	whitePlayerEnhancedEvalFunction->setActionGroup(whiteEngines);
 	whitePlayerIterativeDeepening->setActionGroup(whiteEngines);
 	whitePlayerAspirationSearch->setActionGroup(whiteEngines);
 
 	// Make the buttons checkable
 	blackPlayerBasicAlphaBeta->setCheckable(true);
 	blackPlayerAlphaBetaTT->setCheckable(true);
-	blackPlayerEnhancedEvalFunction->setCheckable(true);
 	blackPlayerIterativeDeepening->setCheckable(true);
 	blackPlayerAspirationSearch->setCheckable(true);
 
 	whitePlayerBasicAlphaBeta->setCheckable(true);
 	whitePlayerAlphaBetaTT->setCheckable(true);
-	whitePlayerEnhancedEvalFunction->setCheckable(true);
 	whitePlayerIterativeDeepening->setCheckable(true);
 	whitePlayerAspirationSearch->setCheckable(true);
 
@@ -215,13 +203,11 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	// Add buttons to submenus, and submenus to main menu
 	blackEngineMenu->addAction(blackPlayerBasicAlphaBeta);
 	blackEngineMenu->addAction(blackPlayerAlphaBetaTT);
-	blackEngineMenu->addAction(blackPlayerEnhancedEvalFunction);
 	blackEngineMenu->addAction(blackPlayerIterativeDeepening);
 	blackEngineMenu->addAction(blackPlayerAspirationSearch);
 
 	whiteEngineMenu->addAction(whitePlayerBasicAlphaBeta);
 	whiteEngineMenu->addAction(whitePlayerAlphaBetaTT);
-	whiteEngineMenu->addAction(whitePlayerEnhancedEvalFunction);
 	whiteEngineMenu->addAction(whitePlayerIterativeDeepening);
 	whiteEngineMenu->addAction(whitePlayerAspirationSearch);
 
@@ -231,7 +217,6 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	// fill menuBar
 	menuBar()->addMenu(playerMenu);
 	menuBar()->addAction(undoLastMoveButton);
-	menuBar()->addAction(highlightAllMovesButton);
 	menuBar()->addMenu(chooseEngineMenu);
 	menuBar()->addAction(runAiButton);
 
@@ -274,7 +259,7 @@ SerPrunesALotWindow::~SerPrunesALotWindow()
 
 void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 {
-	BoardLocation clickedLoc = BoardLocation(button->column, button->row);
+	int clickedLoc = BoardUtils::coordsToIndex(button->column, button->row);
 	EPlayerColors::Type occupier = currentGameState.getOccupier(clickedLoc);
 	EPlayerColors::Type currentPlayer = currentGameState.getCurrentPlayer();
 
@@ -293,12 +278,12 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 		std::vector<Move> moves = currentGameState.generateMoves(clickedLoc);
 		for (const Move& m : moves)
 		{
-			GameBoardButton* targetButton = boardButtons[m.to.y][m.to.x];
+			GameBoardButton* targetButton = boardButtons[BoardUtils::y(m.to)][BoardUtils::x(m.to)];
 			targetButton->setStyleSheet("background-color:green;");
 			highlightedButtons.push_back(targetButton);
 		}
 	}
-	else if (selectedButton && currentGameState.canMove(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, currentPlayer))
+	else if (selectedButton && currentGameState.canMove(BoardUtils::coordsToIndex(selectedButton->column, selectedButton->row), clickedLoc, currentPlayer))
 	{
 		// verify that we actually allow manual control
 		bool allowManualControl = false;
@@ -323,7 +308,7 @@ void SerPrunesALotWindow::buttonClicked(GameBoardButton* button)
 
 			// generate the move we're playing
 			bool capture = (occupier == currentGameState.getOpponentColor(currentPlayer));
-			Move move(BoardLocation(selectedButton->column, selectedButton->row), clickedLoc, capture);
+			Move move(BoardUtils::coordsToIndex(selectedButton->column, selectedButton->row), clickedLoc, capture);
 
 			// apply the move and update GUI status
 			currentGameState.applyMove(move);
@@ -352,26 +337,6 @@ void SerPrunesALotWindow::initBoard()
 {
 	currentGameState.reset();
 	winDetectionLabel->setText("");
-}
-
-void SerPrunesALotWindow::highlightAllMoves()
-{
-	// revert all currently highlighted buttons back to their normal color
-	for (GameBoardButton* highlighted : highlightedButtons)
-	{
-		highlighted->resetBackgroundColor();
-	}
-	highlightedButtons.clear();
-
-	// generate all moves
-	std::vector<Move> moves = currentGameState.generateAllMoves();
-
-	// highlight them all
-	for (Move m : moves)
-	{
-		boardButtons[m.to.y][m.to.x]->setStyleSheet("background-color:blue;");
-		highlightedButtons.push_back(boardButtons[m.to.y][m.to.x]);
-	}
 }
 
 void SerPrunesALotWindow::playTurnAi()
@@ -473,17 +438,17 @@ void SerPrunesALotWindow::playTurnAi()
 	movesPlayed.push_back(move);
 
 	// highlight the squares we came from and went to
-	boardButtons[move.from.y][move.from.x]->setStyleSheet("background-color:blue;");
-	highlightedButtons.push_back(boardButtons[move.from.y][move.from.x]);
+	boardButtons[BoardUtils::y(move.from)][BoardUtils::x(move.from)]->setStyleSheet("background-color:blue;");
+	highlightedButtons.push_back(boardButtons[BoardUtils::y(move.from)][BoardUtils::x(move.from)]);
 	if (move.captured)
 	{
-		boardButtons[move.to.y][move.to.x]->setStyleSheet("background-color:red;");
+		boardButtons[BoardUtils::y(move.to)][BoardUtils::x(move.to)]->setStyleSheet("background-color:red;");
 	}
 	else
 	{
-		boardButtons[move.to.y][move.to.x]->setStyleSheet("background-color:blue;");
+		boardButtons[BoardUtils::y(move.to)][BoardUtils::x(move.to)]->setStyleSheet("background-color:blue;");
 	}
-	highlightedButtons.push_back(boardButtons[move.to.y][move.to.x]);
+	highlightedButtons.push_back(boardButtons[BoardUtils::y(move.to)][BoardUtils::x(move.to)]);
 
 	selectedButton = nullptr;
 
@@ -518,10 +483,6 @@ void SerPrunesALotWindow::resetBlackAiEngine()
 	{
 		aiEngineBlack = new AlphaBetaTT();
 	}
-	else if (blackPlayerEnhancedEvalFunction->isChecked())
-	{
-		aiEngineBlack = new EnhancedEvalFunction();
-	}
 	else if (blackPlayerIterativeDeepening->isChecked())
 	{
 		aiEngineBlack = new IterativeDeepening();
@@ -546,10 +507,6 @@ void SerPrunesALotWindow::resetWhiteAiEngine()
 	else if (whitePlayerAlphaBetaTT->isChecked())
 	{
 		aiEngineWhite = new AlphaBetaTT();
-	}
-	else if (whitePlayerEnhancedEvalFunction->isChecked())
-	{
-		aiEngineWhite = new EnhancedEvalFunction();
 	}
 	else if (whitePlayerIterativeDeepening->isChecked())
 	{
@@ -580,10 +537,10 @@ void SerPrunesALotWindow::undoLastMove()
 		updateGui();
 
 		// make the squares we came from and went to blue
-		boardButtons[move.from.y][move.from.x]->setStyleSheet("background-color:blue;");
-		highlightedButtons.push_back(boardButtons[move.from.y][move.from.x]);
-		boardButtons[move.to.y][move.to.x]->setStyleSheet("background-color:blue;");
-		highlightedButtons.push_back(boardButtons[move.to.y][move.to.x]);
+		boardButtons[BoardUtils::y(move.from)][BoardUtils::x(move.from)]->setStyleSheet("background-color:blue;");
+		highlightedButtons.push_back(boardButtons[BoardUtils::y(move.from)][BoardUtils::x(move.from)]);
+		boardButtons[BoardUtils::y(move.to)][BoardUtils::x(move.to)]->setStyleSheet("background-color:blue;");
+		highlightedButtons.push_back(boardButtons[BoardUtils::y(move.to)][BoardUtils::x(move.to)]);
 
 		selectedButton = nullptr;
 	}
@@ -595,7 +552,7 @@ void SerPrunesALotWindow::updateGui()
 	{
 		for (int x = 0; x < BOARD_WIDTH; ++x)
 		{
-			EPlayerColors::Type occupant = currentGameState.getOccupier(BoardLocation(x, y));
+			EPlayerColors::Type occupant = currentGameState.getOccupier(BoardUtils::coordsToIndex(x, y));
 			GameBoardButton* button = boardButtons[y][x];
 
 			if (occupant == EPlayerColors::NOTHING)

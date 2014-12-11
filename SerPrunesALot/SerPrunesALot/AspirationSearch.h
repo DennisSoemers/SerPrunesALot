@@ -37,9 +37,9 @@ private:
 	int lastRootEvaluation;
 
 	/** The minimum amount of time in milliseconds that the algorithm will spend search */
-	const int MIN_SEARCH_TIME_MS = 20000;
+	const int MIN_SEARCH_TIME_MS = 25000;
 	/** The maximum amount of time in milliseconds that the algorithm will spend trying to complete the current search when over MIN_SEARCH_TIME_MS */
-	const int MAX_EXTRA_SEARCH_TIME_MS = 10000;
+	const int MAX_EXTRA_SEARCH_TIME_MS = 5000;
 
 	// variables used for gathering and logging statistics
 	int nodesVisited;
