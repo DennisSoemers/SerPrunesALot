@@ -254,6 +254,16 @@ int AspirationSearch::evaluate(const GameState& gameState, EPlayerColors::Type w
 	uint64_t blackBitboard = gameState.getBitboard(EPlayerColors::Type::BLACK_PLAYER);
 	uint64_t whiteBitboard = gameState.getBitboard(EPlayerColors::Type::WHITE_PLAYER);
 
+	// If black is to move next and already has a piece in the bottom danger zone, simply treat it as a win for black
+	if(evaluatingPlayer == EPlayerColors::Type::BLACK_PLAYER && (blackBitboard & Bitboards::DANGER_ZONE_BOTTOM))
+	{
+		return WIN_EVALUATION;
+	}	// and similar check for white
+	else if(evaluatingPlayer == EPlayerColors::Type::WHITE_PLAYER && (whiteBitboard & Bitboards::DANGER_ZONE_TOP))
+	{
+		return WIN_EVALUATION;
+	}
+
 	int blackProgression = 0;
 	int whiteProgression = 0;
 

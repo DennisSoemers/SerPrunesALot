@@ -39,6 +39,11 @@ namespace Bitboards
 	/** A constant representing 1's on the eighth row (labelled ''1'' in GUI) */
 	const uint64_t ROW_1 = ROW_2 << 8;
 
+	/** If a black piece is in this zone, and black is to move, he can win instantly */
+	const uint64_t DANGER_ZONE_BOTTOM = ROW_2 & ROW_3;
+	/** If a white piece is in this zone, and white is to move, he can win instantly */
+	const uint64_t DANGER_ZONE_TOP = ROW_6 & ROW_7;
+
 	/**
 	 * Returns the index of the first bit that is set to 1 in the given bitset.
 	 *
