@@ -252,7 +252,7 @@ int AspirationSearch::evaluate(const GameState& gameState, EPlayerColors::Type w
 	int progression = 0;
 
 	uint64_t blackBitboard = gameState.getBitboard(EPlayerColors::Type::BLACK_PLAYER);
-	uint64_t whiteBitboard = gameState.getBitboard(EPlayerColors::Type::BLACK_PLAYER);
+	uint64_t whiteBitboard = gameState.getBitboard(EPlayerColors::Type::WHITE_PLAYER);
 
 	int blackProgression = 0;
 	int whiteProgression = 0;
