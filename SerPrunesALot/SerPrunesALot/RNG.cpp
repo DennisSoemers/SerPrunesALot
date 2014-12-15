@@ -13,7 +13,7 @@ RNG::Generator_64::Generator_64()
 	: gen()
 {
 	unsigned long seed = time(nullptr);				// use for randomness based on time
-	//unsigned long seed = 1416855012;				// use for reproducability of results
+	//unsigned long seed = 1418316624;				// use for reproducability of results
 	LOG_MESSAGE(StringBuilder() << "RNG 64-bits numbers: Seed = " << seed)
 	gen.seed(seed);
 }

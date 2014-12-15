@@ -30,6 +30,9 @@ private:
 	/** The engine's Transposition Table */
 	TranspositionTable transpositionTable;
 
+	/** Table of killer moves */
+	std::vector<std::vector<Move>> killerMoves;
+
 	/** A clock used to avoid overshooting the allowed search time by too much */
 	Timer clock;
 

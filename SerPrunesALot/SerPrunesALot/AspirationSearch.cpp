@@ -15,6 +15,7 @@
 
 AspirationSearch::AspirationSearch()
 	: transpositionTable(),
+	killerMoves(),
 	clock(),
 	lastRootEvaluation(0),
 	totalNodesVisited(0),
@@ -119,10 +120,29 @@ int AspirationSearch::alphaBeta(GameState& gameState, int depth, int alpha, int 
 
 	EPlayerColors::Type currentPlayer = gameState.getCurrentPlayer();
 	Move transpositionMove = (tableDataValid) ? tableData.bestMove : INVALID_MOVE;
+
+	Move killerMove1 = INVALID_MOVE;
+	Move killerMove2 = INVALID_MOVE;
+
+	if(killerMoves.size() > depth)	// may have killer moves stored
+	{
+		std::vector<Move>& currentDepthKillerMoves = killerMoves[depth];
+
+		if(currentDepthKillerMoves.size() > 0)
+		{
+			killerMove1 = currentDepthKillerMoves[0];
+
+			if(currentDepthKillerMoves.size() > 1)
+			{
+				killerMove2 = currentDepthKillerMoves[1];
+			}
+		}
+	}
+
 	MoveGenerator moveGenerator(currentPlayer,
 								gameState.getBitboard(currentPlayer),
 								gameState.getBitboard(gameState.getOpponentColor(currentPlayer)),
-								transpositionMove);
+								transpositionMove, killerMove1, killerMove2);
 
 	int score = MathConstants::LOW_ENOUGH_INT;
 	Move m = moveGenerator.nextMove();
@@ -151,6 +171,36 @@ int AspirationSearch::alphaBeta(GameState& gameState, int depth, int alpha, int 
 		}
 		if(score >= beta)
 		{
+			// pruning, store Killer Move
+			while(depth >= killerMoves.size()) // don't have a vector of killer moves yet for this depth
+			{
+				std::vector<Move> currentDepthKillerMoves;
+				currentDepthKillerMoves.reserve(2);		// 2 slots of Killer Moves
+				killerMoves.push_back(currentDepthKillerMoves);
+			}
+
+			std::vector<Move>& currentDepthKillerMoves = killerMoves[depth];	// killer moves for this depth
+			if(currentDepthKillerMoves.size() > 0)		// already have at least 1 killer move
+			{
+				if(currentDepthKillerMoves[0] == m)		// this killer move already stored in first slot
+				{
+					break;
+				}
+
+				if(currentDepthKillerMoves.size() > 1)	// already have 2 killer moves stored
+				{
+					if(currentDepthKillerMoves[1] == m)	// this killer move already stored in second slot
+					{
+						break;
+					}
+
+					currentDepthKillerMoves[0] = currentDepthKillerMoves[1];	// move second kill move to first slot
+					currentDepthKillerMoves.pop_back();							// and then remove second (which is now also in first slot)
+				}
+			}
+
+			currentDepthKillerMoves.push_back(m);							// and put the new kill move in second slot
+
 			break;
 		}
 
@@ -327,7 +377,8 @@ Move AspirationSearch::startAspirationSearch(GameState& gameState)
 	searchDepth = 0;
 	while(true)
 	{
-		++searchDepth;	// increment search depth for the new search
+		++searchDepth;			// increment search depth for the new search
+		killerMoves.clear();	// clear table of killer moves
 
 		// ================= ALPHA BETA ALGORITHM STARTS HERE =================
 		int score = MathConstants::LOW_ENOUGH_INT;

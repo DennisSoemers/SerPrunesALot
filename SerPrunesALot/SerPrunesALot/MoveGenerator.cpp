@@ -15,37 +15,59 @@ MoveGenerator::MoveGenerator(EPlayerColors::Type playerColor, uint64_t playerBit
 	playerColor(playerColor),
 	moveIndex(0),
 	generatedMoves(false)
-{}
-
-Move MoveGenerator::nextMove()
 {
-	if(moves.empty() && !generatedMoves)
+	moves.reserve(16 * 4);		// upper bound on number of possible moves
+
+	// Add move from TT and any Killer Moves
+	if(!(transpositionMove == INVALID_MOVE))
 	{
-		moves.reserve(16 * 4);		// upper bound on number of possible moves
+		moves.push_back(transpositionMove);
+	}
+	
+	if(!(killerMove1 == INVALID_MOVE) && !(killerMove1 == transpositionMove))
+	{
+		// check if killer move is actually valid
+		uint64_t fromBit = Bitboards::singleBit(killerMove1.from);
+		uint64_t toBit = Bitboards::singleBit(killerMove1.to);
 
-		// Add move from TT and any Killer Moves
-		if(!(transpositionMove == INVALID_MOVE))
+		if(fromBit & playerBitboard)		// we have a piece on the from location
 		{
-			moves.push_back(transpositionMove);
-		}
-
-		// TODO check if Killer moves are valid
-
-		if(!(killerMove1 == INVALID_MOVE))
-		{
-			moves.push_back(killerMove1);
-		}
-
-		if(!(killerMove2 == INVALID_MOVE))
-		{
-			moves.push_back(killerMove2);
+			if(!(toBit & playerBitboard))	// we don't have a piece on the to location
+			{
+				if((killerMove1.captured) == ((opponentBitboard & toBit) != Bitboards::ALL_ZERO))	// capture move iff opponent has piece on to location
+				{
+					moves.push_back(killerMove1);
+				}
+			}
 		}
 	}
 
+	if(!(killerMove2 == INVALID_MOVE) && !(killerMove2 == killerMove1) && !(killerMove2 == transpositionMove))
+	{
+		// check if killer move is actually valid
+		uint64_t fromBit = Bitboards::singleBit(killerMove2.from);
+		uint64_t toBit = Bitboards::singleBit(killerMove2.to);
+
+		if(fromBit & playerBitboard)		// we have a piece on the from location
+		{
+			if(!(toBit & playerBitboard))	// we don't have a piece on the to location
+			{
+				if((killerMove2.captured) == ((opponentBitboard & toBit) != Bitboards::ALL_ZERO))	// capture move iff opponent has piece on to location
+				{
+					moves.push_back(killerMove2);
+				}
+			}
+		}
+	}
+}
+
+Move MoveGenerator::nextMove()
+{
 	if(moveIndex >= moves.size() && !generatedMoves)	// already returned TT / Killer Moves, time to generate other moves
 	{
 		generatedMoves = true;
 		moves.clear();	// no longer need TT Move and Killer Moves in our vector
+		moveIndex = 0;
 
 		// non-capture moves first stored separately
 		// this way, capture moves can be ordered before non-capture moves
@@ -68,11 +90,21 @@ Move MoveGenerator::nextMove()
 				{
 					if(moveTargetBit & opponentBitboard)	// opponent occupies target location
 					{
-						moves.push_back(Move(knightSquare, moveTarget, true));
+						Move move(knightSquare, moveTarget, true);
+
+						if(!(move == transpositionMove) && !(move == killerMove1) && !(move == killerMove2))
+						{
+							moves.push_back(move);
+						}
 					}
 					else
 					{
-						nonCaptureMoves.push_back(Move(knightSquare, moveTarget, false));
+						Move move(knightSquare, moveTarget, false);
+
+						if(!(move == transpositionMove) && !(move == killerMove1) && !(move == killerMove2))
+						{
+							nonCaptureMoves.push_back(move);
+						}
 					}
 				}
 			}
