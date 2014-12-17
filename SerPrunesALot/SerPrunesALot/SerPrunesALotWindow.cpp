@@ -44,8 +44,8 @@ SerPrunesALotWindow::SerPrunesALotWindow(QWidget *parent)
 	int screenWidth = desktop->width();
 	int screenHeight = desktop->height();
 
-	int windowWidth = 800;
-	int windowHeight = 750;
+	int windowWidth = 700;
+	int windowHeight = 650;
 
 	resize(windowWidth, windowHeight);
 	move(((screenWidth - windowWidth) / 2), ((screenHeight - windowHeight) / 2));

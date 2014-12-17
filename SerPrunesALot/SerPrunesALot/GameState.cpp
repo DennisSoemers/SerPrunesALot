@@ -463,7 +463,7 @@ std::vector<std::vector<int>> GameState::precomputeMoveTargetsBlack()
 					moveTargets.push_back(BoardUtils::coordsToIndex(x + 2, y + 1));
 				}
 
-				if(x > 2)						// can move at least two squares to the left
+				if(x >= 2)						// can move at least two squares to the left
 				{
 					moveTargets.push_back(BoardUtils::coordsToIndex(x - 2, y + 1));
 				}
@@ -475,7 +475,7 @@ std::vector<std::vector<int>> GameState::precomputeMoveTargetsBlack()
 						moveTargets.push_back(BoardUtils::coordsToIndex(x + 1, y + 2));
 					}
 
-					if(x > 1)						// can move at least one square to the left
+					if(x >= 1)						// can move at least one square to the left
 					{
 						moveTargets.push_back(BoardUtils::coordsToIndex(x - 1, y + 2));
 					}
@@ -509,7 +509,7 @@ std::vector<std::vector<int>> GameState::precomputeMoveTargetsWhite()
 					moveTargets.push_back(BoardUtils::coordsToIndex(x + 2, y - 1));
 				}
 
-				if(x > 2)						// can move at least two squares to the left
+				if(x >= 2)						// can move at least two squares to the left
 				{
 					moveTargets.push_back(BoardUtils::coordsToIndex(x - 2, y - 1));
 				}
@@ -521,7 +521,7 @@ std::vector<std::vector<int>> GameState::precomputeMoveTargetsWhite()
 						moveTargets.push_back(BoardUtils::coordsToIndex(x + 1, y - 2));
 					}
 
-					if(x > 1)						// can move at least one square to the left
+					if(x >= 1)						// can move at least one square to the left
 					{
 						moveTargets.push_back(BoardUtils::coordsToIndex(x - 1, y - 2));
 					}

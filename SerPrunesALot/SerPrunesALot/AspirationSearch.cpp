@@ -62,7 +62,7 @@ Move AspirationSearch::chooseMove(GameState& gameState)
 
 	return moveToPlay;
 #else
-	return startAspirationSearch(gameState, SEARCH_DEPTH);
+	return startAspirationSearch(gameState);
 #endif // GATHER_STATISTICS
 }
 

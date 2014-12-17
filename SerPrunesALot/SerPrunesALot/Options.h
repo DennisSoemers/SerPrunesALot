@@ -9,7 +9,7 @@
 
 
 // If defined, statistics such as number of nodes visited and time spent will be gathered by AI Engines
-#define GATHER_STATISTICS
+//#define GATHER_STATISTICS
 
 #ifdef GATHER_STATISTICS
 

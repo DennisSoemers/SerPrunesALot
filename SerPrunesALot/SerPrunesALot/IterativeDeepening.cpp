@@ -60,7 +60,7 @@ Move IterativeDeepening::chooseMove(GameState& gameState)
 
 	return moveToPlay;
 #else
-	return startIterativeDeepening(gameState, SEARCH_DEPTH);
+	return startIterativeDeepening(gameState);
 #endif // GATHER_STATISTICS
 }
 
