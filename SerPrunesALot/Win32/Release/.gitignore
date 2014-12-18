@@ -1,1 +1,3 @@
 *.instr.pdb
+/SerPrunesALot.exe
+*.pdb
