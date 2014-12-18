@@ -1,0 +1,1 @@
+inverse white searches opening move depth 8, normal white searches opening move depth 7 (consistently)

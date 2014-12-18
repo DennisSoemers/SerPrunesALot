@@ -1,0 +1,26 @@
+Normal = material + progression
+Enhanced = material + progression + controlled progression
+
+DEPTH 7 (35/1 vs 35)
+Black normal vs White Enhanced -> White wins	(Enhanced)
+Black Enhanced vs White normal -> Black wins	(Enhanced)
+
+DEPTH 7 (35/35 vs 35)
+Black normal vs White Enhanced -> White wins	(Enhanced)
+Black Enhanced vs White normal -> Black wins	(Enhanced)
+
+DEPTH 6 (35/1) vs DEPTH 7 (35)
+Black normal vs White Enhanced -> Black wins	(Normal)
+Black Enhanced vs White normal -> Black wins	(Enhanced)
+
+DEPTH 6 (35/35) vs DEPTH 7 (35)
+Black normal vs White Enhanced -> Black wins	(Normal)
+Black Enhanced vs White normal -> White wins	(Normal)
+
+
+
+CONCLUSIONS:
+At equal depth, Enhanced always beats normal
+At lower depth, Black Enhanced can still beat White normal with weights 35/1. White Enhanced cannot beat Black normal with any weights, and Black Enhanced also cannot beat White normal with weights 35/35
+
+So use Enhanced with weights 35/1

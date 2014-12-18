@@ -1,0 +1,204 @@
+RNG 64-bits numbers: Seed = 1417354368
+Transposition Table occupies 167772160 bytes (= 160 MB)
+
+Iterative Deepening engine searching move for White Player
+Search depth:					7
+Number of nodes visited:			99263242
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.78667
+% of Transposition Table entries replaced:	0.375136
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [41, 241]
+True score = 35
+Aspiration Search engine searching move for Black Player
+Search depth:					7
+Number of nodes visited:			96875911
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.832253
+% of Transposition Table entries replaced:	0.487014
+
+Iterative Deepening engine searching move for White Player
+Search depth:					8
+Number of nodes visited:			93928118
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.873123
+% of Transposition Table entries replaced:	0.63253
+
+Aspiration Search engine searching move for Black Player
+Search depth:					7
+Number of nodes visited:			95541523
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.944992
+% of Transposition Table entries replaced:	1.05961
+
+Iterative Deepening engine searching move for White Player
+Search depth:					7
+Number of nodes visited:			100358132
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.87597
+% of Transposition Table entries replaced:	0.631703
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [-65, 135]
+True score = 240
+Aspiration Search engine searching move for Black Player
+Search depth:					7
+Number of nodes visited:			97229892
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.883798
+% of Transposition Table entries replaced:	0.67092
+
+Iterative Deepening engine searching move for White Player
+Search depth:					8
+Number of nodes visited:			96646265
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.924571
+% of Transposition Table entries replaced:	0.909869
+
+Aspiration Search engine searching move for Black Player
+Search depth:					7
+Number of nodes visited:			99107503
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.862352
+% of Transposition Table entries replaced:	0.577401
+
+Iterative Deepening engine searching move for White Player
+Search depth:					7
+Number of nodes visited:			98882494
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.91157
+% of Transposition Table entries replaced:	0.805131
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [-65, 135]
+True score = 240
+Aspiration Search engine searching move for Black Player
+Search depth:					8
+Number of nodes visited:			72389846
+Time spent:					21510.6 ms
+% of Transposition Table entries used:		0.794724
+% of Transposition Table entries replaced:	0.396977
+
+Iterative Deepening engine searching move for White Player
+Search depth:					8
+Number of nodes visited:			98722494
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.918753
+% of Transposition Table entries replaced:	0.886281
+
+Aspiration Search engine searching move for Black Player
+Search depth:					10
+Number of nodes visited:			86777827
+Time spent:					25507.9 ms
+% of Transposition Table entries used:		0.825104
+% of Transposition Table entries replaced:	0.556996
+
+Iterative Deepening engine searching move for White Player
+Search depth:					9
+Number of nodes visited:			93233770
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.987854
+% of Transposition Table entries replaced:	2.01397
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [-164, 36]
+True score = 240
+Aspiration Search engine searching move for Black Player
+Search depth:					9
+Number of nodes visited:			109492914
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.847417
+% of Transposition Table entries replaced:	0.540622
+
+Iterative Deepening engine searching move for White Player
+Search depth:					9
+Number of nodes visited:			3354510
+Time spent:					976.963 ms
+% of Transposition Table entries used:		0.0573013
+% of Transposition Table entries replaced:	0.000138283
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [-235, -35]
+True score = 35
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 8! <<<<<<<<<<<<<<<<<<<
+Window = [-376, -176]
+True score = -1900
+Aspiration Search engine searching move for Black Player
+Search depth:					8
+Number of nodes visited:			2957364
+Time spent:					883.161 ms
+% of Transposition Table entries used:		0.0383222
+% of Transposition Table entries replaced:	3.21865e-005
+
+Iterative Deepening engine searching move for White Player
+Search depth:					7
+Number of nodes visited:			9010248
+Time spent:					2534.11 ms
+% of Transposition Table entries used:		0.127625
+% of Transposition Table entries replaced:	0.00133038
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [-1859, -1659]
+True score = 35
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 6! <<<<<<<<<<<<<<<<<<<
+Window = [-376, -176]
+True score = -1900
+Aspiration Search engine searching move for Black Player
+Search depth:					6
+Number of nodes visited:			167529
+Time spent:					64.6879 ms
+% of Transposition Table entries used:		0.00183415
+% of Transposition Table entries replaced:	0
+
+Iterative Deepening engine searching move for White Player
+Search depth:					5
+Number of nodes visited:			24441
+Time spent:					7.16223 ms
+% of Transposition Table entries used:		0.000455141
+% of Transposition Table entries replaced:	0
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [-1859, -1659]
+True score = -135
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 4! <<<<<<<<<<<<<<<<<<<
+Window = [-376, -176]
+True score = -1900
+Aspiration Search engine searching move for Black Player
+Search depth:					4
+Number of nodes visited:			18096
+Time spent:					26.6365 ms
+% of Transposition Table entries used:		0.000249386
+% of Transposition Table entries replaced:	0
+
+Iterative Deepening engine searching move for White Player
+Search depth:					3
+Number of nodes visited:			2167
+Time spent:					0.695552 ms
+% of Transposition Table entries used:		2.86102e-005
+% of Transposition Table entries replaced:	0
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [-1859, -1659]
+True score = 0
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 2! <<<<<<<<<<<<<<<<<<<
+Window = [-241, -41]
+True score = -1900
+Aspiration Search engine searching move for Black Player
+Search depth:					2
+Number of nodes visited:			123
+Time spent:					18.43 ms
+% of Transposition Table entries used:		6.91414e-006
+% of Transposition Table entries replaced:	0
+
+Iterative Deepening engine searching move for White Player
+Search depth:					1
+Number of nodes visited:			33
+Time spent:					0.0210541 ms
+% of Transposition Table entries used:		0
+% of Transposition Table entries replaced:	0
+
+Iterative Deepening engine END OF GAME stats:
+Number of nodes visited:			693425914
+Time spent:					213519 ms
+

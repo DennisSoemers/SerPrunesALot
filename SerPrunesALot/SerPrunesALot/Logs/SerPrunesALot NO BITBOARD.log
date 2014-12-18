@@ -1,0 +1,20 @@
+RNG 64-bits numbers: Seed = 1418130773
+Transposition Table occupies 167772160 bytes (= 160 MB)
+
+Aspiration Search engine searching move for White Player
+Search depth:					7
+Number of nodes visited:			33950460
+Time spent:					30000 ms
+% of Transposition Table entries used:		0.686193
+% of Transposition Table entries replaced:	0.217175
+
+>>>>>>>>>>>>>>>> Aspiration Search required a new Search at depth = 1! <<<<<<<<<<<<<<<<<<<
+Window = [41, 241]
+True score = 35
+Aspiration Search engine searching move for Black Player
+Search depth:					8
+Number of nodes visited:			27737413
+Time spent:					25326.3 ms
+% of Transposition Table entries used:		0.686108
+% of Transposition Table entries replaced:	0.218818
+
