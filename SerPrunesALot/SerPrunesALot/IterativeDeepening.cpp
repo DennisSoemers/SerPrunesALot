@@ -130,7 +130,6 @@ int IterativeDeepening::alphaBeta(GameState& gameState, int depth, int alpha, in
 	while(!(m == INVALID_MOVE))
 	{
 		gameState.applyMove(m);												// apply move
-		transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
 		int value = -alphaBeta(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
 
@@ -330,7 +329,6 @@ Move IterativeDeepening::startIterativeDeepening(GameState& gameState)
 		{
 			const Move& m = moves[i];											// select move
 			gameState.applyMove(m);												// apply move
-			transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
 			int value = -alphaBeta(gameState, searchDepth - 1, -beta, -alpha);	// continue searching
 			gameState.undoMove(m);												// finished searching this subtree, so undo the move
 

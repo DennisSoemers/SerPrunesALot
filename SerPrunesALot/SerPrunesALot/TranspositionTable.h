@@ -92,10 +92,10 @@ struct TableEntry
 /**
  * A transposition table
  *
- * Uses 64-bit hash values, with the first 21 bits as primary hash code
- * and the remaining 43 bits as secondary hash code.
+ * Uses 64-bit hash values, with the first 22 bits as primary hash code
+ * and the remaining 42 bits as secondary hash code.
  *
- * The table has space for 2^21 entries.
+ * The table has space for 2^22 entries.
  */
 class TranspositionTable
 {
@@ -117,14 +117,6 @@ public:
 	 * Only returns a meaningful number if GATHER_STATISTICS is defined
 	 */
 	int getNumReplacementsRequired() const;
-
-	/** 
-	 * Prefetches the entry corresponding to the given zobrist value and loads it into L2 cache 
-	 * See Section 6.3.2 of: http://www.akkadia.org/drepper/cpumemory.pdf
-	 *
-	 * Profiling indicated a consistent 6% performance increase using this function
-	 */
-	void prefetch(uint64_t zobrist) const;
 
 	/** 
 	 * Retrieves the data corresponding to the given zobrist hash value in the Transposition Table

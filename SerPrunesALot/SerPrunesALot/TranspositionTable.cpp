@@ -27,14 +27,6 @@ void TranspositionTable::clear()
 	table = new TableEntry[TRANSPOSITION_TABLE_NUM_ENTRIES]();
 }
 
-void TranspositionTable::prefetch(uint64_t zobrist) const
-{
-	static const int SIZE_OF_TABLE_DATA = sizeof(TableData);
-	const char* entry = (char*) (table + (HashValue(zobrist).hashCodes.primary));
-	_mm_prefetch(entry, _MM_HINT_T1);
-	_mm_prefetch(entry + SIZE_OF_TABLE_DATA, _MM_HINT_T1);
-}
-
 const TableData& TranspositionTable::retrieve(uint64_t zobrist) const
 {
 	HashValue zobristHash = HashValue(zobrist);

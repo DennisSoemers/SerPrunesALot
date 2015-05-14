@@ -151,7 +151,6 @@ int AspirationSearch::alphaBeta(GameState& gameState, int depth, int alpha, int 
 	while(!(m == INVALID_MOVE))
 	{
 		gameState.applyMove(m);												// apply move
-		transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
 		int value = -alphaBeta(gameState, depth - 1, -beta, -alpha);		// continue searching
 		gameState.undoMove(m);												// finished searching this subtree, so undo the move
 
@@ -200,7 +199,7 @@ int AspirationSearch::alphaBeta(GameState& gameState, int depth, int alpha, int 
 			}
 
 			currentDepthKillerMoves.push_back(m);							// and put the new kill move in second slot
-
+			
 			break;
 		}
 
@@ -402,7 +401,6 @@ Move AspirationSearch::startAspirationSearch(GameState& gameState)
 		{
 			const Move& m = moves[i];											// select move
 			gameState.applyMove(m);												// apply move
-			transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
 			int value = -alphaBeta(gameState, searchDepth - 1, -beta, -alpha);	// continue searching
 			gameState.undoMove(m);												// finished searching this subtree, so undo the move
 
@@ -457,7 +455,6 @@ Move AspirationSearch::startAspirationSearch(GameState& gameState)
 			{
 				const Move& m = moves[i];											// select move
 				gameState.applyMove(m);												// apply move
-				transpositionTable.prefetch(gameState.getZobrist());				// prefetch transposition table data
 				int value = -alphaBeta(gameState, searchDepth - 1, -beta, -alpha);	// continue searching
 				gameState.undoMove(m);												// finished searching this subtree, so undo the move
 

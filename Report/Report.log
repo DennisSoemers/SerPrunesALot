@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.27)  7 DEC 2014 19:06
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9) (preloaded format=pdflatex 2014.11.27)  19 DEC 2014 21:05
 entering extended mode
 **Report.tex
 (D:\Apps\SerPrunesALot\Report\Report.tex
@@ -288,35 +288,62 @@ Now handling font encoding U ...
    defining Unicode char U+2122 (decimal 8482)
    defining Unicode char U+2423 (decimal 9251)
 ))
+(D:\Apps\Miktex\tex\latex\algorithms\algorithm.sty
+Package: algorithm 2009/08/24 v0.1 Document Style `algorithm' - floating enviro
+nment
+
+(D:\Apps\Miktex\tex\latex\float\float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count89
+\float@exts=\toks17
+\float@box=\box26
+\@float@everytoks=\toks18
+\@floatcapt=\box27
+)
+(D:\Apps\Miktex\tex\latex\base\ifthen.sty
+Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
+)
+\@float@every@algorithm=\toks19
+\c@algorithm=\count90
+)
+(D:\Apps\Miktex\tex\latex\algorithms\algorithmic.sty
+Package: algorithmic 2009/08/24 v0.1 Document Style `algorithmic'
+\c@ALC@unique=\count91
+\c@ALC@line=\count92
+\c@ALC@rem=\count93
+\c@ALC@depth=\count94
+\ALC@tlm=\skip48
+\algorithmicindent=\skip49
+)
 (D:\Apps\SerPrunesALot\Report\Report.aux)
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 27.
+LaTeX Font Info:    ... okay on input line 27.
 
 (D:\Apps\Miktex\tex\context\base\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count89
+\scratchcounter=\count95
 \scratchdimen=\dimen105
-\scratchbox=\box26
-\nofMPsegments=\count90
-\nofMParguments=\count91
-\everyMPshowfont=\toks17
-\MPscratchCnt=\count92
+\scratchbox=\box28
+\nofMPsegments=\count96
+\nofMParguments=\count97
+\everyMPshowfont=\toks20
+\MPscratchCnt=\count98
 \MPscratchDim=\dimen106
-\MPnumerator=\count93
-\makeMPintoPDFobject=\count94
-\everyMPtoPDFconversion=\toks18
+\MPnumerator=\count99
+\makeMPintoPDFobject=\count100
+\everyMPtoPDFconversion=\toks21
 )
-\c@maskedRefs=\count95
+\c@maskedRefs=\count101
  (D:\Apps\Miktex\tex\latex\apacite\english.apc
 File: english.apc 2013/07/21 v6.03 apacite language file
 LaTeX Info: Redefining \BPBI on input line 129.
@@ -324,22 +351,60 @@ LaTeX Info: Redefining \BHBI on input line 130.
 ) [1
 
 {C:/Users/Soemers/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-No file Report.bbl.
-[1] (D:\Apps\SerPrunesALot\Report\Report.aux) ) 
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 52.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 52.
+
+<KnightThroughInitialPosition.png, id=8, 527.72156pt x 464.4853pt>
+File: KnightThroughInitialPosition.png Graphic file (type png)
+
+<use KnightThroughInitialPosition.png>
+Package pdftex.def Info: KnightThroughInitialPosition.png used on input line 54
+.
+(pdftex.def)             Requested size: 176.3872pt x 155.24895pt.
+ [1 <D:/Apps/SerPrunesALot/Report/KnightThroughInitialPosition.png>]
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 82.
+ (D:\Apps\Miktex\tex\latex\base\omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 82.
+ [2]
+[3] [4] [5] <ExampleProgressionEval.png, id=31, 526.21594pt x 465.23813pt>
+File: ExampleProgressionEval.png Graphic file (type png)
+
+<use ExampleProgressionEval.png>
+Package pdftex.def Info: ExampleProgressionEval.png used on input line 191.
+(pdftex.def)             Requested size: 175.59491pt x 155.24895pt.
+ [6] [7 <D:/Apps/SerPrunesALot/Report/ExampleProgressionEval.png>] [8] [9] (D:\
+Apps\SerPrunesALot\Report\Report.bbl
+Overfull \hbox (131.94978pt too wide) in paragraph at lines 68--77
+[]\OT1/cmr/m/it/10 chessprogramming - BitScan.  \OT1/cmr/m/n/10 (n.d.[]).  http
+s://chessprogramming.wikispaces.com/BitScan#Bitscan%20forward-
+ []
+
+) [10] (D:\Apps\SerPrunesALot\Report\Report.aux) ) 
 Here is how much of TeX's memory you used:
- 1758 strings out of 493921
- 21407 string characters out of 3152488
- 75023 words of memory out of 3000000
- 5078 multiletter control sequences out of 15000+200000
- 5149 words of font info for 19 fonts, out of 3000000 for 9000
+ 2138 strings out of 493921
+ 26627 string characters out of 3152488
+ 85587 words of memory out of 3000000
+ 5431 multiletter control sequences out of 15000+200000
+ 7019 words of font info for 25 fonts, out of 3000000 for 9000
  841 hyphenation exceptions out of 8191
- 27i,4n,19p,238b,132s stack positions out of 5000i,500n,10000p,200000b,50000s
-<D:/Apps/Miktex/fonts/type1/publ
-ic/amsfonts/cm/cmbx12.pfb><D:/Apps/Miktex/fonts/type1/public/amsfonts/cm/cmr10.
-pfb><D:/Apps/Miktex/fonts/type1/public/amsfonts/cm/cmr12.pfb>
-Output written on Report.pdf (2 pages, 42493 bytes).
+ 27i,5n,19p,1156b,576s stack positions out of 5000i,500n,10000p,200000b,50000s
+<D:/Apps/Miktex/fonts/type1/p
+ublic/amsfonts/cm/cmbx10.pfb><D:/Apps/Miktex/fonts/type1/public/amsfonts/cm/cmb
+x12.pfb><D:/Apps/Miktex/fonts/type1/public/amsfonts/cm/cmbx8.pfb><D:/Apps/Mikte
+x/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><D:/Apps/Miktex/fonts/type1/public
+/amsfonts/cm/cmmi10.pfb><D:/Apps/Miktex/fonts/type1/public/amsfonts/cm/cmr10.pf
+b><D:/Apps/Miktex/fonts/type1/public/amsfonts/cm/cmr12.pfb><D:/Apps/Miktex/font
+s/type1/public/amsfonts/cm/cmr7.pfb><D:/Apps/Miktex/fonts/type1/public/amsfonts
+/cm/cmr8.pfb><D:/Apps/Miktex/fonts/type1/public/amsfonts/cm/cmsy10.pfb><D:/Apps
+/Miktex/fonts/type1/public/amsfonts/cm/cmti10.pfb>
+Output written on Report.pdf (11 pages, 267271 bytes).
 PDF statistics:
- 21 PDF objects out of 1000 (max. 8388607)
+ 84 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 11 words of extra memory for PDF output out of 10000 (max. 10000000)
 
